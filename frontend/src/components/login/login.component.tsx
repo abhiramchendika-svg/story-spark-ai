@@ -2,10 +2,11 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import SSInput from "../ui-component/ss-input/ss-input";
 import SSButton from "../ui-component/ss-button/ss-button";
 import { useState } from "react";
-import { useLoginUserMutation } from "../../redux/apis/auth.api";
+import { useLoginUserMutation, useGoogleLoginMutation } from "../../redux/apis/auth.api";
 import { storeUserInfo } from "../../services/auth.service";
 import RedirectComponent from "../redirect.component";
 import toast, { Toaster } from "react-hot-toast";
+import { GoogleLogin } from "@react-oauth/google";
 
 type Inputs = {
   email: string;
@@ -14,6 +15,7 @@ type Inputs = {
 
 const LoginComponent = () => {
   const [loginUser] = useLoginUserMutation();
+  const [googleLogin] = useGoogleLoginMutation();
   const { register, handleSubmit } = useForm<Inputs>();
   const [isBusy, setIsBusy] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -29,9 +31,32 @@ const LoginComponent = () => {
       }
     } catch (err: unknown) {
       console.log("error: ", err);
+      toast.error("Failed to login. Please check your credentials.");
     } finally {
       setIsBusy(false);
     }
+  };
+
+  const handleGoogleLoginSuccess = async (credentialResponse: any) => {
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
+      if (res.data.accessToken) {
+        toast.success("User logged in successfully with Google!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        setIsLoggedIn(true);
+      }
+    } catch (err: unknown) {
+      console.log("Google login error: ", err);
+      toast.error("Failed to login with Google. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    console.log("Login Failed");
+    toast.error("Google login failed. Please try again.");
   };
 
   if (isLoggedIn) {
@@ -42,9 +67,11 @@ const LoginComponent = () => {
     <>
       <div className="flex min-h-screen flex-col md:flex-row">
         <div className="bg-zinc-800 flex min-h-56 flex-col justify-between p-6 md:w-[35%] md:min-h-screen md:p-8">
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-            StorySparkAI
-          </h1>
+          <a href="/">
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
+               StorySparkAI
+            </h1>
+          </a>
           <h1 className="text-3xl text-gray-100">Welcome Back</h1>
         </div>
         <div className="bg-black flex flex-1 items-center justify-center p-6 md:w-[65%] md:p-8">
@@ -91,10 +118,12 @@ const LoginComponent = () => {
                 </div>
               </div>
 
-              <button className="w-full bg-gray-300 font-medium py-2 !rounded-button hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 rounded text-indigo-600">
-                <i className="fa-brands fa-google text-indigo-600"></i>
-                Login with Google
-              </button>
+              <div className="w-full flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleLoginSuccess}
+                  onError={handleGoogleLoginError}
+                />
+              </div>
 
               <div className="text-center text-sm text-indigo-600">
                 <div className="space-y-2">

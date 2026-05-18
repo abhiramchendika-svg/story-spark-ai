@@ -3,6 +3,11 @@ import mongoose from "mongoose";
 import config from "./config";
 import app from "./app";
 import dns from "dns";
+import http from "http";
+import { Server } from "socket.io";
+import { JwtHalers } from "./utils/jwt.helper";
+import { Secret } from "jsonwebtoken";
+import { setNotificationSocket } from "./socket/notification.socket";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
@@ -15,7 +20,49 @@ async function main() {
   try {
     console.log(config.database_url);
     await connectDB();
-    app.listen(config.port, () => {
+    const httpServer = http.createServer(app);
+    const io = new Server(httpServer, {
+      cors: {
+        origin: config.cors_origins?.length
+          ? config.cors_origins
+          : ["http://localhost:4001", "https://storysparkai.vercel.app"],
+        credentials: true,
+      },
+    });
+
+    setNotificationSocket(io);
+
+    io.use((socket, next) => {
+      try {
+        const token = socket.handshake.auth?.token as string | undefined;
+        if (!token) {
+          return next(new Error("Unauthorized"));
+        }
+
+        const verifiedUser = JwtHalers.verifyToken(
+          token,
+          config.jwt.secret as Secret
+        );
+        const userId = verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
+        if (!userId) {
+          return next(new Error("Unauthorized"));
+        }
+
+        socket.data.userId = userId.toString();
+        next();
+      } catch (error) {
+        next(new Error("Unauthorized"));
+      }
+    });
+
+    io.on("connection", (socket) => {
+      const userId = socket.data.userId as string | undefined;
+      if (userId) {
+        socket.join(`user:${userId}`);
+      }
+    });
+
+    httpServer.listen(config.port, () => {
       console.log(`Story-Spark-AI app listening on port ${config.port}`);
     });
   } catch (error) {

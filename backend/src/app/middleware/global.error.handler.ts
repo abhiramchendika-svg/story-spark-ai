@@ -6,6 +6,7 @@ import { IGenericErrorMessage } from "../../interfaces/error";
 import handleValidationError from "../../errors/handle_validation_error";
 import handleCastError from "../../errors/handle_cast_error";
 import handleZodError from "../../errors/handle_zod_error";
+import handleDuplicateError from "../../errors/handle_duplicate_error";
 import ApiError from "../../errors/api_error";
 
 const globalErrorHandler: ErrorRequestHandler = (
@@ -14,9 +15,11 @@ const globalErrorHandler: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  config.env === "development"
-    ? console.log("Global Error Handler", err)
-    : console.error("Global Error Handler", err);
+  if (config.env === "development") {
+    console.log("Global Error Handler:", err instanceof Error ? err.message : "Unknown error");
+  } else {
+    console.error("Global Error Handler:", err instanceof Error ? err.message : "Unknown error");
+  }
 
   let statusCode = 500;
   let message = "Something went wrong!";
@@ -29,6 +32,11 @@ const globalErrorHandler: ErrorRequestHandler = (
     errorMessage = simplifiedError.errorMessages;
   } else if (err && err.name === "CastError") {
     const simplifiedError = handleCastError(err);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError.message;
+    errorMessage = simplifiedError.errorMessages;
+  } else if (err && err.code === 11000) {
+    const simplifiedError = handleDuplicateError(err);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
     errorMessage = simplifiedError.errorMessages;

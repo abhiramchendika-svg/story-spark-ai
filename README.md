@@ -68,7 +68,7 @@
 3. **Environment files**
 
    - Copy `backend/.env.example` → `backend/.env` and fill in all values (see [Environment variables](#environment-variables)).
-   - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g. `http://localhost:5000/api/v1` when the backend runs on port 5000). Optionally set `VITE_SOCKET_URL` for notifications.
+  - Copy `frontend/.env.example` → `frontend/.env` and set `VITE_BASE_URL` to your API base URL (e.g. `http://localhost:5000/api/v1` when the backend runs on port 5000). Optionally set `VITE_SOCKET_URL` for real-time notifications; the frontend uses your logged-in access token to join the notification room.
 
    > Never commit `backend/.env` or `frontend/.env`. Only `.env.example` files belong in git.
 
@@ -130,7 +130,7 @@ cp frontend/.env.example frontend/.env
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `VITE_BASE_URL` | Yes | API base URL, e.g. `http://localhost:5000/api/v1` |
-| `VITE_SOCKET_URL` | No | Socket.IO URL for notifications (optional) |
+| `VITE_SOCKET_URL` | No | Socket.IO URL for real-time notifications (optional) |
 
 ### Contributing workflow
 

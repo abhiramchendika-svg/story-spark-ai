@@ -14,12 +14,14 @@ const postApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [tagTypes.post, tagTypes.user],
     }),
+
     getPostLists: build.query({
       query: (arg: Record<string, string | number>) => ({
         url: `/${POST_URL}/lists`,
         method: "GET",
         params: arg,
       }),
+
       transformResponse: (response: {
         data: Post[];
         meta: IMeta;
@@ -31,13 +33,23 @@ const postApi = baseApi.injectEndpoints({
           message: response.message,
         };
       },
+
+      transformErrorResponse: (response: any) => {
+        return {
+          status: response?.status,
+          message: "Unable to fetch posts. Please try again later.",
+        };
+      },
+
       providesTags: [tagTypes.post],
     }),
+
     getLatestLists: build.query({
       query: () => ({
         url: `/${POST_URL}/latest-lists`,
         method: "GET",
       }),
+
       transformResponse: (response: {
         data: Post[];
         meta: IMeta;
@@ -49,13 +61,23 @@ const postApi = baseApi.injectEndpoints({
           message: response.message,
         };
       },
+
+      transformErrorResponse: (response: any) => {
+        return {
+          status: response?.status,
+          message: "Unable to fetch latest posts. Please try again later.",
+        };
+      },
+
       providesTags: [tagTypes.post],
     }),
+
     getFeaturedLists: build.query({
       query: () => ({
         url: `/${POST_URL}/feature-lists`,
         method: "GET",
       }),
+
       transformResponse: (response: {
         data: Post[];
         meta: IMeta;
@@ -67,26 +89,60 @@ const postApi = baseApi.injectEndpoints({
           message: response.message,
         };
       },
+
+      transformErrorResponse: (response: any) => {
+        return {
+          status: response?.status,
+          message: "Unable to fetch featured posts. Please try again later.",
+        };
+      },
+
       providesTags: [tagTypes.post],
     }),
+
     getPostById: build.query({
       query: (id: string) => ({
         url: `/${POST_URL}/${id}`,
         method: "GET",
       }),
-      transformResponse: (response: { data: Post; message: string }) => {
+
+      transformResponse: (response: {
+        data: Post;
+        message: string;
+      }) => {
         return response.data;
       },
+
+      transformErrorResponse: (response: any) => {
+        return {
+          status: response?.status,
+          message: "Unable to fetch post details.",
+        };
+      },
+
       providesTags: [tagTypes.post],
     }),
+
     getPostByTag: build.query({
       query: (tag: string) => ({
         url: `/${POST_URL}/tag/${tag}`,
         method: "GET",
       }),
-      transformResponse: (response: { data: Post[]; message: string }) => {
+
+      transformResponse: (response: {
+        data: Post[];
+        message: string;
+      }) => {
         return response.data;
       },
+
+      transformErrorResponse: (response: any) => {
+        return {
+          status: response?.status,
+          message: "Unable to fetch posts by tag.",
+        };
+      },
+
       providesTags: [tagTypes.post],
     }),
   }),

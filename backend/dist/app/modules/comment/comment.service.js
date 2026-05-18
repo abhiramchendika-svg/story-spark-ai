@@ -20,8 +20,8 @@ const comment_model_1 = require("./comment.model");
 const mongoose_1 = require("mongoose");
 const post_model_1 = require("../post/post.model");
 const createComment = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = token;
-    const user = yield user_model_1.User.findOne({ email });
+    const { _id, email } = token;
+    const user = _id ? yield user_model_1.User.findById(_id) : yield user_model_1.User.findOne({ email });
     if (!user) {
         throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User not found!");
     }
@@ -52,13 +52,36 @@ const getCommentsByPostId = (postId) => __awaiter(void 0, void 0, void 0, functi
     const commentsWithReplies = yield Promise.all(comments.map((comment) => __awaiter(void 0, void 0, void 0, function* () {
         const replies = yield comment_model_1.Comment.find({ parentCommentId: comment._id })
             .populate("userId", "name email")
+            .populate({ path: "likes" })
             .sort({ createdAt: 1 });
         return Object.assign(Object.assign({}, comment.toObject()), { replies });
     })));
     const totalComments = yield comment_model_1.Comment.countDocuments({ postId });
     return { comments: commentsWithReplies, totalComments };
 });
+const toggleCommentLike = (commentId, token) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    const { _id, email } = token;
+    const user = _id ? yield user_model_1.User.findById(_id) : yield user_model_1.User.findOne({ email });
+    if (!user) {
+        throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "User not found!");
+    }
+    const comment = yield comment_model_1.Comment.findById(commentId);
+    if (!comment) {
+        throw new api_error_1.default(http_status_1.default.BAD_REQUEST, "Comment not found!");
+    }
+    const hasLiked = (_a = comment.likes) === null || _a === void 0 ? void 0 : _a.includes(user._id);
+    if (hasLiked) {
+        comment.likes = (_b = comment.likes) === null || _b === void 0 ? void 0 : _b.filter((id) => id.toString() !== user._id.toString());
+    }
+    else {
+        (_c = comment.likes) === null || _c === void 0 ? void 0 : _c.push(user._id);
+    }
+    yield comment.save();
+    return comment;
+});
 exports.CommentService = {
     createComment,
     getCommentsByPostId,
+    toggleCommentLike,
 };

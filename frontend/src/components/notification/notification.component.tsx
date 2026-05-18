@@ -1,82 +1,78 @@
 import React from "react";
-import { NotificationResponse } from "../../models/notification";
+import { NotificationItem } from "../../models/notification";
 import { getNotificationIcon } from "./notification.utils";
+import { timeAgo } from "../../utils/time-formate";
 
 interface INotificationComponentProps {
-  notifications: NotificationResponse[];
+  notifications: NotificationItem[];
   showNotification: boolean;
   setShowNotification: (show: boolean) => void;
+  unreadCount: number;
+  onMarkAsRead: (notificationId: string) => void;
 }
 
 const NotificationComponent: React.FC<INotificationComponentProps> = ({
   notifications,
   showNotification,
   setShowNotification,
+  unreadCount,
+  onMarkAsRead,
 }) => {
+  if (!showNotification) {
+    return null;
+  }
+
   return (
-    <div className="fixed inset-y-0 right-0 bg-slate-900 w-96 shadow-xl transform transition-transform duration-300 translate-x-0 z-50 ">
-      <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between p-3 border-b border-gray-600 sticky top-0 ">
-          <div className="flex items-center space-x-3">
-            <h3 className="text-xl font-semibold text-gray-400">
-              Notifications
-            </h3>
-          </div>
-          <button
-            className="text-gray-400 hover:text-gray-500 transition-colors cursor-pointer"
-            onClick={() => setShowNotification(!showNotification)}
-          >
-            <i className="fas fa-times text-xl"></i>
-          </button>
+    <div className="absolute right-0 top-12 z-50 w-[22rem] overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 shadow-2xl backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <div>
+          <h3 className="text-sm font-semibold text-white">Notifications</h3>
+          <p className="text-xs text-slate-400">{unreadCount} unread</p>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="mb-6">
-            {notifications.length > 0 ? (
-              <div className="space-y-4">
-                {notifications.map((notify) => {
-                  const { icon, textColor } = getNotificationIcon(
-                    notify.type
-                  );
-                  return (
-                    <div
-                      key={notify._id}
-                      className={`w-full p-3 mt-1 bg-blue-500/20 rounded flex`}
-                    >
-                      <div
-                        aria-label="post icon"
-                        role="img"
-                        className={`focus:outline-none w-8 h-8 border rounded-full border-gray-400 flex items-center justify-center`}
-                      >
-                        <i className={`fa-solid ${icon} ${textColor}`}></i>
-                      </div>
-                      <div className="pl-3">
-                        <p
-                          className={`focus:outline-none text-sm leading-none ${textColor}`}
-                        >
-                          {notify.data.title}
-                        </p>
-                        <p
-                          className={`focus:outline-none text-sm leading-none ${textColor} mt-1`}
-                        >
-                          {notify.data.message}
-                        </p>
-                        <p className="focus:outline-none text-xs leading-3 pt-1 text-gray-500">
-                          2 hours ago
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div>
-                <span className="text-gray-400">
-                  No Notification available!
-                </span>
-              </div>
-            )}
+        <button
+          className="rounded-full p-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
+          onClick={() => setShowNotification(false)}
+        >
+          <i className="fas fa-times text-sm"></i>
+        </button>
+      </div>
+      <div className="max-h-[26rem] overflow-y-auto p-2">
+        {notifications.length > 0 ? (
+          <div className="space-y-2">
+            {notifications.map((notify) => {
+              const { icon, textColor } = getNotificationIcon(notify.type);
+              return (
+                <button
+                  key={notify._id}
+                  type="button"
+                  onClick={() => onMarkAsRead(notify._id)}
+                  className={`flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition-all hover:bg-white/5 ${
+                    notify.isRead ? "border-white/5 bg-white/[0.02]" : "border-blue-500/20 bg-blue-500/10"
+                  }`}
+                >
+                  <span className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 ${textColor}`}>
+                    <i className={`fa-solid ${icon}`}></i>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-sm font-semibold ${notify.isRead ? "text-slate-300" : "text-white"}`}>
+                      {notify.title}
+                    </span>
+                    <span className="mt-1 block text-sm leading-5 text-slate-400">
+                      {notify.body}
+                    </span>
+                    <span className="mt-2 block text-xs text-slate-500">
+                      {timeAgo(notify.createdAt)}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        </div>
+        ) : (
+          <div className="px-3 py-10 text-center text-sm text-slate-400">
+            No notifications yet.
+          </div>
+        )}
       </div>
     </div>
   );

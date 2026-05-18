@@ -20,6 +20,7 @@ export const getToken = async (req: Request): Promise<ITokenPayload> => {
       config.jwt.secret as Secret
     );
     const user = {
+      _id: verifiedUser._id,
       email: verifiedUser.email,
       role: verifiedUser.role,
       subscriptionType: verifiedUser.subscriptionType,

@@ -25,6 +25,7 @@ exports.PostSchema = new mongoose_1.Schema({
     attachments: [{ type: String }],
     comments: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Comment" }],
     reactions: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Reaction" }],
+    bookmarks: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "User", default: [] }],
 }, {
     timestamps: true,
 });

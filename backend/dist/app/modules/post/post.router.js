@@ -20,4 +20,5 @@ router.get("/feature-lists", post_controller_1.PostController.getFeaturedPosts);
 router.post("/:postId", (0, auth_middleware_1.default)(user_1.ENUM_USER_ROLE.ADMIN, user_1.ENUM_USER_ROLE.SUPER_ADMIN), post_controller_1.PostController.doFeaturedPosts);
 router.get("/:id", post_controller_1.PostController.getSinglePost);
 router.get("/tag/:tag", post_controller_1.PostController.getPostsByTag);
+router.post("/:id/bookmark", (0, auth_middleware_1.default)(user_1.ENUM_USER_ROLE.USER, user_1.ENUM_USER_ROLE.WRITER, user_1.ENUM_USER_ROLE.ADMIN, user_1.ENUM_USER_ROLE.SUPER_ADMIN), post_controller_1.PostController.toggleBookmark);
 exports.PostRouter = router;

@@ -1,22 +1,20 @@
 interface NotificationPayload {
-  userName?: string;
   title: string;
-  message: string;
+  body: string;
 }
 
-export interface INotification {
-  type: "success" | "error" | "info" | "warning";
-  data: NotificationPayload;
-  status?: string;
-  email: string;
-}
-
-export interface NotificationResponse {
+export interface NotificationItem {
   _id: string;
   createdAt: string;
   updatedAt: string;
-  email: string;
-  status: string;
+  userId: string;
   type: string;
-  data: NotificationPayload;
+  title: string;
+  body: string;
+  isRead: boolean;
+}
+
+export interface NotificationListResponse {
+  data: NotificationItem[];
+  message?: string;
 }

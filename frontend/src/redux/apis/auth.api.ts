@@ -16,6 +16,17 @@ const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: [tagTypes.user],
     }),
+    googleLogin: build.mutation({
+      query: (data) => ({
+        url: `/${AUTH_URL}/google-login`,
+        method: "POST",
+        data: data,
+      }),
+      transformResponse: (response: { data: AccessToken }) => {
+        return { data: response.data };
+      },
+      invalidatesTags: [tagTypes.user],
+    }),
     registerUser: build.mutation({
       query: (data) => ({
         url: `/${AUTH_URL}/register`,
@@ -30,4 +41,4 @@ const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useLoginUserMutation, useRegisterUserMutation } = authApi;
+export const { useLoginUserMutation, useGoogleLoginMutation, useRegisterUserMutation } = authApi;

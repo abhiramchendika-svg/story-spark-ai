@@ -11,6 +11,9 @@ router.post(
   AuthController.login
 );
 
+// Google Login API route
+router.post("/google-login", AuthController.googleLogin);
+
 // Register API route
 router.post(
   "/register",

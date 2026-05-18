@@ -83,10 +83,10 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   };
 
   return (
-    <div className="mt-16 mx-10 pb-10">
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-8 ">
-          <div className="flex justify-between items-center">
+    <div className="mt-16 px-4 sm:px-6 md:px-10 pb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="col-span-1 lg:col-span-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <div className="">
               <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
                 {selectedStory?.title}
@@ -141,7 +141,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
             </div>
             <div className="prose max-w-none text-gray-400">
               {selectedStory ? (
-                <p>{selectedStory.content}</p>
+                <p className="break-words">{selectedStory.content}</p>
               ) : (
                 <p>No story available. Please generate a story first.</p>
               )}
@@ -180,7 +180,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           </div>
         </div>
 
-        <div className="col-span-4 ">
+        <div className="col-span-1 lg:col-span-4">
           <div className="mb-5">
             <h1 className="text-2xl bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Preview
@@ -193,17 +193,17 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                   <img
                     src={selectedStory.imageURL}
                     alt="card-image"
-                    className="w-full h-40 object-cover rounded-b-md"
+                    className="w-full h-32 sm:h-40 object-cover rounded-b-md"
                   />
                 </div>
                 <div className="px-3 py-1">
-                  <div className="mb-2 rounded-full bg-cyan-600 py-0.5 px-2.5 border border-transparent text-xs text-gray-400 transition-all shadow-sm w-20 text-center">
-                    {selectedStory.tag.toUpperCase()}
+                  <div className="mb-2 inline-flex items-center rounded-full bg-purple-600 py-1 px-3 text-xs font-semibold text-white shadow-sm">
+                   {selectedStory.tag.toUpperCase()}
                   </div>
                   <h6 className="mb-1 text-gray-300 text-xl font-semibold">
                     {selectedStory.title}
                   </h6>
-                  <p className="text-gray-400 font-light">
+                  <p className="text-gray-400 font-light break-words text-sm sm:text-base">
                     {getShortenedText(selectedStory.content)}
                   </p>
                 </div>

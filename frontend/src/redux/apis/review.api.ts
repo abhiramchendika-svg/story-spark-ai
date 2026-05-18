@@ -1,0 +1,42 @@
+import baseApi from "../base_api/base.api";
+
+const reviewApi = baseApi.injectEndpoints({
+  endpoints: (build) => ({
+    getReviews: build.query({
+      query: () => ({
+        url: "/review/lists",
+        method: "GET",
+      }),
+
+      transformResponse: (response: {
+        data: any;
+        message: string;
+      }) => response.data,
+    }),
+
+    getPendingReviews: build.query({
+      query: () => ({
+        url: "/review/pending",
+        method: "GET",
+      }),
+
+      transformResponse: (response: {
+        data: any;
+        message: string;
+      }) => response.data,
+    }),
+
+    approveReview: build.mutation({
+      query: (id: string) => ({
+        url: `/review/${id}`,
+        method: "PATCH",
+      }),
+    }),
+  }),
+});
+
+export const {
+  useGetReviewsQuery,
+  useGetPendingReviewsQuery,
+  useApproveReviewMutation,
+} = reviewApi;

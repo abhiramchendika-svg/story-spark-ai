@@ -52,11 +52,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await fetchUserInfo(token);
   };
 
-  useEffect(() => {
-    if (accessToken) {
-      fetchUserInfo(accessToken);
+ useEffect(() => {
+  if (!accessToken) return;
+
+  try {
+    const payload = JSON.parse(atob(accessToken.split(".")[1]));
+
+    // Check token expiration
+    if (payload.exp * 1000 < Date.now()) {
+      logout();
+      return;
     }
-  }, [accessToken, fetchUserInfo]);
+
+    fetchUserInfo(accessToken);
+  } catch (error) {
+    console.error("Invalid token:", error);
+    logout();
+  }
+}, [accessToken, fetchUserInfo, logout]);
 
   return (
     <AuthContext.Provider value={{ accessToken, user, login, logout }}>

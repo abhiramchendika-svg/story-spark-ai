@@ -93,6 +93,17 @@ const getPostsByTag = (0, catch_async_1.default)((req, res) => __awaiter(void 0,
         data: result,
     });
 }));
+const toggleBookmark = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = (0, route_param_1.routeParam)(req.params.id);
+    const token = yield (0, token_1.getToken)(req);
+    const result = yield post_service_1.PostService.toggleBookmark(id, token);
+    (0, send_response_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: result.message,
+        data: result,
+    });
+}));
 exports.PostController = {
     createPost,
     getPosts,
@@ -101,4 +112,5 @@ exports.PostController = {
     doFeaturedPosts,
     getSinglePost,
     getPostsByTag,
+    toggleBookmark,
 };

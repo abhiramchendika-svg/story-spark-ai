@@ -4,7 +4,7 @@ import { SubscriptionType } from "../../../enums/subscription_type";
 export interface IUser {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   role: string;
   status: string;
   subscriptionType: SubscriptionType;

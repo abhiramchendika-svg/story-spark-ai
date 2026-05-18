@@ -10,7 +10,7 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
   {
     email: { type: String, required: true, unique: true, lowercase: true },
     name: { type: String, maxlength: 100, minlength: 5 },
-    password: { type: String, required: true },
+    password: { type: String, required: false, default: "" },
     role: {
       type: String,
       required: true,
@@ -61,10 +61,16 @@ export const UserSchema: Schema<IUser> = new Schema<IUser, UserModel>(
 
 UserSchema.pre("save", async function (next) {
   const user = this;
-  user.password = await bcrypt.hash(
-    user.password,
-    Number(config.bcrypt_salt_rounds)
-  );
+  
+  // Only hash password if it exists and is not empty (for password-based auth)
+  // Skip for Google OAuth users who don't have passwords
+  if (user.password && user.password.trim() !== "") {
+    user.password = await bcrypt.hash(
+      user.password,
+      Number(config.bcrypt_salt_rounds)
+    );
+  }
+  
   next();
 });
 

@@ -59,8 +59,24 @@ const refreshToken = (0, catch_async_1.default)((req, res) => __awaiter(void 0, 
         data: { accessToken },
     });
 }));
+const googleLogin = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const body = req.body;
+    const result = yield auth_service_1.AuthService.googleLogin(body);
+    const { accessToken, refreshToken } = result;
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: config_1.default.env === "production",
+    });
+    (0, send_response_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "User logged in successfully with Google!",
+        data: { accessToken },
+    });
+}));
 exports.AuthController = {
     login,
     register,
     refreshToken,
+    googleLogin,
 };

@@ -89,14 +89,19 @@ const getPosts = async (
   }
 
   if (sortBy && orderBy) {
-    sortCondition[sortBy] = orderBy;
+    sortCondition[sortBy] = orderBy === "asc" ? 1 : -1;
   }
 
   const result = await Post.find(whereCondition)
     .sort(sortCondition)
     .skip(skip)
     .limit(limit)
-    .populate("author", "name email createdAt");
+    .populate("author", "name email createdAt")
+    .populate({
+      path: "reactions",
+      populate: { path: "userId", select: "email" },
+    })
+    .populate("bookmarks", "email");
   const total = await Post.countDocuments(whereCondition);
   return {
     meta: {
@@ -113,7 +118,12 @@ const getLatestPosts = async () => {
     const res = await Post.find()
       .sort({ createdAt: -1 })
       .limit(2)
-      .populate("author", "name email createdAt");
+      .populate("author", "name email createdAt")
+      .populate({
+        path: "reactions",
+        populate: { path: "userId", select: "email" },
+      })
+      .populate("bookmarks", "email");
     return res;
   } catch (error) {
     throw new ApiError(
@@ -128,7 +138,12 @@ const getFeaturedPosts = async () => {
     const res = await Post.find({ isFeaturedPost: true })
       .sort({ createdAt: -1, updatedBy: -1 })
       .limit(2)
-      .populate("author", "name email createdAt");
+      .populate("author", "name email createdAt")
+      .populate({
+        path: "reactions",
+        populate: { path: "userId", select: "email" },
+      })
+      .populate("bookmarks", "email");
     return res;
   } catch (error) {
     throw new ApiError(
@@ -155,10 +170,13 @@ const doFeaturedPosts = async (postId: string) => {
 };
 
 const getSinglePost = async (id: string) => {
-  const postById = await Post.findOne({ _id: id }).populate(
-    "author",
-    "name email createdAt"
-  );
+  const postById = await Post.findOne({ _id: id })
+    .populate("author", "name email createdAt")
+    .populate({
+      path: "reactions",
+      populate: { path: "userId", select: "email" },
+    })
+    .populate("bookmarks", "email");
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
@@ -168,8 +186,42 @@ const getSinglePost = async (id: string) => {
 const getPostsByTag = async (tag: string) => {
   const result = await Post.find({ tag })
     .limit(2)
-    .populate("author", "name email createdAt");
+    .populate("author", "name email createdAt")
+    .populate({
+      path: "reactions",
+      populate: { path: "userId", select: "email" },
+    })
+    .populate("bookmarks", "email");
   return result;
+};
+
+const toggleBookmark = async (postId: string, token: ITokenPayload) => {
+  const { email } = token;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+  const post = await Post.findOne({ _id: postId });
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
+  }
+
+  post.bookmarks = post.bookmarks || [];
+  const isBookmarked = post.bookmarks.some(
+    (uId) => uId && uId.toString() === user._id.toString()
+  );
+
+  if (isBookmarked) {
+    post.bookmarks = post.bookmarks.filter(
+      (uId) => uId && uId.toString() !== user._id.toString()
+    );
+    await post.save();
+    return { message: "Bookmark removed", bookmarked: false };
+  } else {
+    post.bookmarks.push(user._id);
+    await post.save();
+    return { message: "Bookmark added", bookmarked: true };
+  }
 };
 
 export const PostService = {
@@ -180,4 +232,5 @@ export const PostService = {
   doFeaturedPosts,
   getSinglePost,
   getPostsByTag,
+  toggleBookmark,
 };

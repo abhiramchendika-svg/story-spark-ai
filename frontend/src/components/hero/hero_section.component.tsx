@@ -1,30 +1,12 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import NavListComponent from "./nav_list.component";
-import NotificationComponent from "../notification/notification.component";
-import { NotificationResponse } from "../../models/notification";
-import { socketIo } from "../../socket/socket.oi";
 
 const HeroSectionComponent = () => {
-  const [showNotification, setShowNotification] = useState<boolean>(false);
-  const [notifications, setNotifications] = useState<NotificationResponse[]>(
-    []
-  );
-  useEffect(() => {
-    socketIo.on("pushNotification", (data) => {
-      setNotifications((prev) => [...prev, data]);
-    });
-    return () => {
-      socketIo.off("pushNotification");
-    };
-  }, []);
   return (
     <div className="gradient-bg min-h-screen">
       <div className="relative overflow-hidden">
-        <NavListComponent
-          setShowNotification={setShowNotification}
-          newNotify={notifications.length}
-        />
+        <NavListComponent />
         <div className="relative z-10 mx-auto max-w-7xl px-6 pt-14 pb-24 text-center">
           <div className="inline-flex items-center justify-center mx-auto px-4 py-1.5 mb-8 rounded-full bg-opacity-10 border border-white/20 opacity-80 bg-blue-500/20 text-white">
             <span className="text-sm font-medium">
@@ -70,13 +52,6 @@ const HeroSectionComponent = () => {
         {/* <div className="absolute top-[-200px] right-[100px] w-[500px] h-[400px] bg-pink-500/20 rounded-full blur-3xl -z-10"></div> */}
       </div>
 
-      {showNotification && (
-        <NotificationComponent
-          notifications={notifications}
-          showNotification={showNotification}
-          setShowNotification={setShowNotification}
-        />
-      )}
     </div>
   );
 };

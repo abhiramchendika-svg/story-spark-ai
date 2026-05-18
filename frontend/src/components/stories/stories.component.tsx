@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import StoriesViewComponent, { IStories } from "./stories.view.component";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUserInfo, isLoggedIn } from "../../services/auth.service";
 import { getRequestLimit, getWordCount, prompts } from "./stories.utils";
 import {
@@ -17,6 +17,8 @@ type Inputs = {
 };
 
 const StoriesComponent = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<Inputs>();
   const [stories, setStories] = useState<IStories[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -27,12 +29,32 @@ const StoriesComponent = () => {
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   const [textareaValue, setTextareaValue] = useState<string>("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
+    parseInt(localStorage.getItem("guestRequestCount") || "0", 10)
+  );
+  const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    if (location.state && location.state.prompt) {
+      setTextareaValue(location.state.prompt);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     setValue("prompt", textareaValue);
   }, [textareaValue, setValue]);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    if (!login && guestRequestCount >= 3) {
+      setShowLimitModal(true);
+      return;
+    }
+
     if (data.prompt === "") {
       toast.error("Please enter a prompt to generate a story.");
       return;
@@ -55,6 +77,11 @@ const StoriesComponent = () => {
         setTextareaValue("");
         setValue("prompt", "");
         reset();
+        if (!login) {
+          const newCount = guestRequestCount + 1;
+          setGuestRequestCount(newCount);
+          localStorage.setItem("guestRequestCount", String(newCount));
+        }
       }
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
@@ -69,15 +96,37 @@ const StoriesComponent = () => {
     setTextareaValue(selectedValue);
   };
 
+  const handleClearPrompt = () => {
+    setTextareaValue("");
+    setSelectedPrompt("");
+    setValue("prompt", "");
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br animate-gradient-slow min-h-screen">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-6 flex justify-between items-start">
+        <div className="py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link to="/">
             <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded">
               <i className="fa-solid fa-left-long"></i> BACK
             </div>
           </Link>
+          {!login && (
+            <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm">
+              Free access for 3 requests —{" "}
+              <Link to="/login">
+                {""}
+                <span className="text-indigo-400 underline font-semibold">
+                  Login
+                </span>{" "}
+              </Link>
+              {""}
+              for more!
+            </div>
+          )}
           <div className="">
             <button className="mt-1 !rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded">
               <span>
@@ -93,31 +142,15 @@ const StoriesComponent = () => {
               <i className="fas fa-bolt text-yellow-400"></i>
             </button>
             <div className="mt-3 text-gray-500 text-xs">
-              <span>This month request: {data?.requestsThisMonth ?? 0}</span>
+              <span>This month request: {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}</span>
               <br />
-              <span>Total posts: {data?.postsCount ?? 0}</span>
+              <span>Total posts: {login ? (data?.postsCount ?? 0) : 0}</span>
             </div>
           </div>
         </div>
 
-        {!login && (
-          <div className="flex justify-center mb-4">
-            <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-1 transition-all duration-300 rounded text-sm">
-              Free access for 3 requests —{" "}
-              <Link to="/login">
-                {""}
-                <span className="text-indigo-400 underline font-semibold">
-                  Login
-                </span>{" "}
-              </Link>
-              {""}
-              for more!
-            </div>
-          </div>
-        )}
-
-        <div className="mt-2 sm:mt-4">
-         <h1 className="text-gray-300 text-4xl font-extrabold text-center mb-4 leading-snug drop-shadow-lg tracking-wide">
+        <div className="mt-11">
+          <h1 className="text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12 leading-snug drop-shadow-lg tracking-wide">
             ✨ Enter Prompt –{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
               Generate Story Today!
@@ -129,18 +162,40 @@ const StoriesComponent = () => {
             <div className="bg-blue-500/10 rounded-md p-4 border border-gray-400">
               <div className="relative">
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                  <textarea
-                    {...register("prompt")}
-                    aria-label="Story prompt input"
-                    className="w-full h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-2 focus:ring-blue-500 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500"
-                    placeholder="Every great story begins with a single idea. What’s yours?"
-                    value={textareaValue}
-                    onChange={(e) => setTextareaValue(e.target.value)}
-                  ></textarea>
-                  <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+                  <div className="relative">
+                    <textarea
+                      {...register("prompt")}
+                      ref={inputRef}
+                      className="w-full h-32 sm:h-40 resize-none border-none outline-none bg-transparent text-gray-300 focus:ring-0 text-lg leading-relaxed tracking-wide placeholder:italic placeholder:text-gray-500 pr-10"
+                      placeholder="Every great story begins with a single idea. What's yours?"
+                      value={textareaValue}
+                      onChange={(e) => setTextareaValue(e.target.value)}
+                    ></textarea>
+                    
+                    {textareaValue.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearPrompt}
+                        className="absolute right-2 top-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+                        aria-label="Clear prompt"
+                        title="Clear prompt"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 px-1">
+                    💡 <span className="font-medium">Keyboard tip:</span> Press{" "}
+                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">Tab</kbd>{" "}
+                    to navigate fields and{" "}
+                    <kbd className="px-1 py-0.5 text-xs bg-gray-700 rounded border border-gray-600">Enter</kbd>{" "}
+                    to generate your story.
+                  </p>
+                  <div className="flex justify-end mt-2 w-full">
                     <button
                       type="submit"
-                        aria-label="Generate story"
                       disabled={loading}
                       className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
                         loading
@@ -164,7 +219,6 @@ const StoriesComponent = () => {
                   className="w-full p-2 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none text-sm"
                   value={selectedPrompt}
                   onChange={handlePromptSelect}
-                  aria-label="Select an example prompt"
                 >
                   <option value="" disabled>
                     Select a prompt
@@ -193,6 +247,37 @@ const StoriesComponent = () => {
         setStories={setStories}
       />
       <div className="absolute top-[-200px] left-[250px] w-[800px] h-[350px] bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
+
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0f172a] border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(59,130,246,0.5)] max-w-md w-full p-6 transform transition-all">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-lock text-2xl text-blue-400"></i>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-200 mb-2">Free Limit Reached</h3>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                You’ve used all 3 free story generations. Login to continue creating more stories.
+              </p>
+              <div className="flex flex-col gap-3">
+                <Link
+                  to="/login"
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25"
+                >
+                  Login
+                </Link>
+                <button
+                  onClick={() => setShowLimitModal(false)}
+                  className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-gray-300 font-medium py-3 px-4 rounded-xl transition-all"
+                >
+                  Continue Browsing
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );

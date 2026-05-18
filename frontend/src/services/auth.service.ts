@@ -17,6 +17,7 @@ export const getUserInfo = () => {
     const decodedData = decodedToken(authToken);
     const userInfo = {
       email: decodedData.email || "",
+      userId: decodedData.userId || "",
       name: decodedData.name || "",
       postsCount: decodedData.postsCount || 0,
       role: decodedData.role || "guest",

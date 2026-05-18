@@ -11,6 +11,7 @@ export interface LoginUser {
   exp: number;
   iat: number;
   email: string;
+  userId?: string;
   role: string;
   name: string;
   subscriptionType: string;

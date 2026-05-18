@@ -14,7 +14,7 @@ const aiModelApi = baseApi.injectEndpoints({
       transformResponse: (response: { data: IStories[]; message: string }) => {
         return { data: response.data, message: response.message };
       },
-      invalidatesTags: [tagTypes.model],
+      invalidatesTags: [tagTypes.model, tagTypes.user],
     }),
     generateFreeModel: build.mutation({
       query: (data) => ({
@@ -25,7 +25,7 @@ const aiModelApi = baseApi.injectEndpoints({
       transformResponse: (response: { data: IStories[]; message: string }) => {
         return { data: response.data, message: response.message };
       },
-      invalidatesTags: [tagTypes.model],
+      invalidatesTags: [tagTypes.model, tagTypes.user],
     }),
   }),
 });

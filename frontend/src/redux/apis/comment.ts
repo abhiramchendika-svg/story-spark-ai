@@ -24,7 +24,14 @@ const commentApi = baseApi.injectEndpoints({
       }) => response.data,
       providesTags: [tagTypes.post, tagTypes.comment],
     }),
+    toggleCommentLike: build.mutation({
+      query: (commentId: string) => ({
+        url: `/${COMMENT_URL}/toggle-like/commentId=${commentId}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: [tagTypes.post, tagTypes.comment],
+    }),
   }),
 });
 
-export const { useCreateCommentMutation, useGetCommentsListQuery } = commentApi;
+export const { useCreateCommentMutation, useGetCommentsListQuery, useToggleCommentLikeMutation } = commentApi;

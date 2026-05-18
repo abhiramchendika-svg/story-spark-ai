@@ -26,10 +26,10 @@ const FeatureComponent = () => {
               />
               <div className="p-6">
                 <div className="flex items-center mb-3">
-                  <SSProfile name={post.author.name} size="h-8 w-8" />
+                  <SSProfile name={post.author?.name || 'Unknown User'} size="h-8 w-8" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-400">
-                      {post.author.name}
+                      {post.author?.name || 'Unknown User'}
                     </p>
                     <p className="text-xs text-gray-500">
                       {formatDateShort(post.createdAt)}

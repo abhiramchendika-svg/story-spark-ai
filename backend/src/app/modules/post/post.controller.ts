@@ -88,6 +88,18 @@ const getPostsByTag = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const toggleBookmark = catchAsync(async (req: Request, res: Response) => {
+  const id = routeParam(req.params.id);
+  const token = await getToken(req);
+  const result = await PostService.toggleBookmark(id, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result.message,
+    data: result,
+  });
+});
+
 export const PostController = {
   createPost,
   getPosts,
@@ -96,4 +108,5 @@ export const PostController = {
   doFeaturedPosts,
   getSinglePost,
   getPostsByTag,
+  toggleBookmark,
 };

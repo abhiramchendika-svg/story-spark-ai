@@ -72,9 +72,16 @@ const VerifyEmail = async (payload: IEmailBody) => {
       </html>
       `,
     };
-    await transporter.sendMail(mailOptions);
+    if (config.verify_email && config.verify_password) {
+      await transporter.sendMail(mailOptions);
+    } else {
+      console.log("==================================================");
+      console.log(`[DEVELOPMENT MOCK EMAIL] OTP for ${email} is: ${otp}`);
+      console.log("==================================================");
+    }
     return { otp, expiresAt };
   } catch (error) {
+    console.error("Failed to verify email:", error);
     throw new ApiError(500, "Failed to send email");
   }
 };

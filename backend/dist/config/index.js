@@ -33,4 +33,5 @@ exports.default = {
     gemini_api_key: process.env.GEMINI_API_KEY,
     verify_email: process.env.VERIFY_EMAIL,
     verify_password: process.env.VERIFY_PASSWORD,
+    google_client_id: process.env.GOOGLE_CLIENT_ID,
 };

@@ -1,3 +1,4 @@
+import CommunitySpotlightComponent from "./community_spotlight/community_spotlight.component";
 import FeatureComponent from "./feature/feature.component";
 import LatestPostsComponent from "./latest_posts/latest_posts.component";
 import FeatureProfileComponent from "./feature_profile/feature_profile.component";
@@ -13,7 +14,7 @@ const HomeComponent = () => {
   const isLogin = isLoggedIn();
   return (
     <>
-      <div className="grid grid-cols-12 items-start gap-8 px-5 mb-10">
+      <div className="grid grid-cols-12 items-start gap-8 px-5 mb-10 pt-10">
         <div className="col-span-12 lg:col-span-8 min-w-0">
           <FeatureComponent />
           <LatestPostsComponent />
@@ -26,6 +27,7 @@ const HomeComponent = () => {
           </div>
         </div>
       </div>
+      <CommunitySpotlightComponent /> 
       <ResourceComponent />
       <WriterFeedbackComponent />
       <PricingComponent />

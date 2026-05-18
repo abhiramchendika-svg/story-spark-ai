@@ -11,8 +11,8 @@ const createComment = async (
   payload: ICommentPayload,
   token: ITokenPayload
 ) => {
-  const { email } = token;
-  const user = await User.findOne({ email });
+  const { _id, email } = token;
+  const user = _id ? await User.findById(_id) : await User.findOne({ email });
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
@@ -47,6 +47,7 @@ const getCommentsByPostId = async (postId: string) => {
     comments.map(async (comment) => {
       const replies = await Comment.find({ parentCommentId: comment._id })
         .populate("userId", "name email")
+        .populate({ path: "likes" })
         .sort({ createdAt: 1 });
       return {
         ...comment.toObject(),
@@ -58,7 +59,29 @@ const getCommentsByPostId = async (postId: string) => {
   return { comments: commentsWithReplies, totalComments };
 };
 
+const toggleCommentLike = async (commentId: string, token: ITokenPayload) => {
+  const { _id, email } = token;
+  const user = _id ? await User.findById(_id) : await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
+  }
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Comment not found!");
+  }
+  
+  const hasLiked = comment.likes?.includes(user._id);
+  if (hasLiked) {
+    comment.likes = comment.likes?.filter((id) => id.toString() !== user._id.toString());
+  } else {
+    comment.likes?.push(user._id);
+  }
+  await comment.save();
+  return comment;
+};
+
 export const CommentService = {
   createComment,
   getCommentsByPostId,
+  toggleCommentLike,
 };

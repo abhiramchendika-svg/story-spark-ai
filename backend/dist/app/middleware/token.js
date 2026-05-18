@@ -25,6 +25,7 @@ const getToken = (req) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const verifiedUser = yield jwt_helper_1.JwtHalers.verifyToken(token, config_1.default.jwt.secret);
         const user = {
+            _id: verifiedUser._id,
             email: verifiedUser.email,
             role: verifiedUser.role,
             subscriptionType: verifiedUser.subscriptionType,

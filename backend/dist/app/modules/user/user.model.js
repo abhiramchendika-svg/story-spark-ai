@@ -22,7 +22,7 @@ const user_status_1 = require("../../../enums/user_status");
 exports.UserSchema = new mongoose_1.Schema({
     email: { type: String, required: true, unique: true, lowercase: true },
     name: { type: String, maxlength: 100, minlength: 5 },
-    password: { type: String, required: true },
+    password: { type: String, required: false, default: "" },
     role: {
         type: String,
         required: true,
@@ -71,7 +71,11 @@ exports.UserSchema = new mongoose_1.Schema({
 exports.UserSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         const user = this;
-        user.password = yield bcrypt_1.default.hash(user.password, Number(config_1.default.bcrypt_salt_rounds));
+        // Only hash password if it exists and is not empty (for password-based auth)
+        // Skip for Google OAuth users who don't have passwords
+        if (user.password && user.password.trim() !== "") {
+            user.password = yield bcrypt_1.default.hash(user.password, Number(config_1.default.bcrypt_salt_rounds));
+        }
         next();
     });
 });
