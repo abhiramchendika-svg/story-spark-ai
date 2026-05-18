@@ -125,7 +125,20 @@ function App() {
               />
             }
           />
-
+        <Route
+          path="analytics"
+          element={
+            <ProtectedRoute
+              element={<div className="text-white p-5 text-2xl">Analytics Dashboard</div>}
+              allowedRoles={[
+                USER_ROLE.USER,
+                USER_ROLE.ADMIN,
+                USER_ROLE.SUPER_ADMIN,
+                USER_ROLE.WRITER,
+         ]}
+        />
+      }
+      />
           <Route
             path="settings"
             element={
