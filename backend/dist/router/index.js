@@ -15,6 +15,8 @@ const comment_router_1 = require("../app/modules/comment/comment.router");
 const analysis_router_1 = require("../app/modules/analysis/analysis.router");
 const review_router_1 = require("../app/modules/review/review.router");
 const reaction_router_1 = require("../app/modules/reaction/reaction.router");
+const newsletter_route_1 = require("../app/modules/newsletter/newsletter.route");
+// alongside the other routes:
 const bookmark_router_1 = require("../app/modules/bookmark/bookmark.router");
 const router = express_1.default.Router();
 const modules = [
@@ -57,6 +59,10 @@ const modules = [
     {
         path: "/reaction",
         router: reaction_router_1.ReactionRouter,
+    },
+    {
+        path: "/newsletter",
+        router: newsletter_route_1.NewsletterRouter,
     },
     {
         path: "/bookmarks",

@@ -55,11 +55,12 @@ const NavListComponent: React.FC = () => {
         <div className="flex items-center justify-between">
         <div className="flex items-center space-x-8">
           <Link to="/">
-            <img src={logo} alt="logo" width={50} height={50} />
+            <img src={logo} alt="logo" className="h-10 w-auto object-contain" />
           </Link>
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-400 hover:text-custom transition">HOME</Link>
             <Link to="/explore" className="text-gray-400 hover:text-custom transition">EXPLORE</Link>
+            <Link to="/contact-us" className="text-gray-400 hover:text-custom transition">CONTACT US</Link>
             <Link to="/community" className="text-gray-400 hover:text-custom transition">COMMUNITY</Link>
             {isLogin && (
               <>
@@ -74,12 +75,13 @@ const NavListComponent: React.FC = () => {
 
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-3">
-            <button type="button" className="p-2 text-gray-400 hover:text-gray-500">
+            <button type="button" aria-label="Search" className="p-2 text-gray-400 hover:text-gray-500">
               <i className="fas fa-search"></i>
             </button>
             <div className="relative inline-flex" ref={notificationMenuRef}>
               <button
                 type="button"
+                aria-label="Notifications"
                 className="relative rounded-full p-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
                 data-notification-trigger="true"
                 onClick={toggle}
@@ -93,21 +95,31 @@ const NavListComponent: React.FC = () => {
               </button>
             </div>
             {isLogin ? (
-              <button onClick={handelLogout} className="text-gray-400 px-6 py-2 font-medium cursor-pointer">
+              <button onClick={handelLogout} className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
                 LOGOUT
               </button>
             ) : (
-              <Link to="/login">
-                <button className="text-gray-400 px-6 py-2 font-medium cursor-pointer">
-                  LOGIN
-                </button>
-              </Link>
+              <>
+                <Link to="/login">
+                  <button className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
+                    LOGIN
+                  </button>
+                </Link>
+                <Link to="/signup">
+                  <button className="text-gray-400 px-4 py-2 font-medium cursor-pointer rounded-md hover:bg-white/5 hover:text-white transition">
+                    SIGN UP
+                  </button>
+                </Link>
+              </>
             )}
           </div>
 
-          <button className="md:hidden text-gray-400 hover:text-gray-300 p-2"
+          <button
+            type="button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            className="md:hidden text-gray-400 hover:text-gray-300 p-2"
             onClick={() => setMenuOpen((prev) => !prev)}>
-            <i className={`fas ${menuOpen ? "fa-xmark" : "fa-bars"} text-xl`}></i>
+            <i className={`fas ${menuOpen ? "fa-xmark" : "fa-bars"} text-xl`} />
           </button>
         </div>
       </div>
@@ -142,7 +154,10 @@ const NavListComponent: React.FC = () => {
                 LOGOUT
               </button>
             ) : (
-              <Link to="/login" className="text-gray-400 py-2">LOGIN</Link>
+              <>
+                <Link to="/login" className="text-gray-400 block px-3 py-2 rounded-md hover:bg-white/5 hover:text-white">LOGIN</Link>
+                <Link to="/signup" className="text-gray-400 block px-3 py-2 rounded-md hover:bg-white/5 hover:text-white">SIGN UP</Link>
+              </>
             )
           }
         </div>

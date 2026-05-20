@@ -3,21 +3,25 @@ import { Post } from "../../../models/post";
 import LoadingAnimation from "../../loading/loading.component";
 import SSProfile from "../../ui-component/ss-profile/ss-profile";
 import { formatDateShort } from "../../../utils/time-formate";
+import { useNavigate } from "react-router-dom";
 
 const LatestPostsComponent = () => {
   const { data, isLoading } = useGetLatestListsQuery(undefined);
+  const navigate = useNavigate();
+
   if (isLoading) {
     return <LoadingAnimation />;
   }
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-300 mb-6">Latest Posts</h2>
+    <div className="text-slate-100">
+      <h2 className="text-2xl font-bold text-slate-100 mb-6">Latest Posts</h2>
       <div className="space-y-6">
         {data?.posts?.length ?? 0 > 0 ? (
           data?.posts?.map((post: Post) => (
             <div
               key={post._id}
-              className="bg-blue-500/10 rounded-lg shadow-sm p-6"
+              onClick={() => navigate(`/post/${post._id}`)}
+              className="bg-blue-500/10 rounded-lg shadow-sm p-6 cursor-pointer hover:bg-blue-500/20 transition-colors duration-200"
             >
               <div className="flex items-center mb-4">
                 <SSProfile name={post.author?.name || 'Unknown User'} size="h-8 w-8" />
@@ -59,7 +63,9 @@ const LatestPostsComponent = () => {
             </div>
           ))
         ) : (
-          <div>Post is not available!</div>
+          <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-4 py-5 text-slate-300">
+            Post is not available!
+          </div>
         )}
       </div>
     </div>

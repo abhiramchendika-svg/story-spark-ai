@@ -9,7 +9,16 @@ import { CommentRouter } from "../app/modules/comment/comment.router";
 import { AnalysisRouter } from "../app/modules/analysis/analysis.router";
 import { ReviewRouter } from "../app/modules/review/review.router";
 import { ReactionRouter } from "../app/modules/reaction/reaction.router";
+
+import { NewsletterRouter } from "../app/modules/newsletter/newsletter.route";
+
+
+
+// alongside the other routes:
+
+
 import { BookmarkRouter } from "../app/modules/bookmark/bookmark.router";
+
 const router = express.Router();
 
 const modules = [
@@ -54,11 +63,14 @@ const modules = [
     router: ReactionRouter,
   },
   {
+    path: "/newsletter",
+    router: NewsletterRouter,
+  },
+  {
     path: "/bookmarks",
     router: BookmarkRouter,
   },
 ];
-
 modules.forEach((route) => router.use(route.path, route.router));
 
 export const Routers = router;

@@ -46,11 +46,11 @@ const CommunitySpotlightComponent = () => {
                   </p>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-200 mb-2 line-clamp-2">
+              <h3 className="text-lg font-semibold text-gray-200 mb-2">
                 {post.title}
               </h3>
-              <p className="text-gray-400 text-sm mb-4 line-clamp-3">
-                {post.content.slice(0, 120)}...
+              <p className="text-gray-400 text-sm mb-4">
+                {post.content}
               </p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-xs text-gray-500 gap-3">
@@ -75,7 +75,9 @@ const CommunitySpotlightComponent = () => {
             </div>
           ))
         ) : (
-          <p className="text-gray-500 col-span-3">No spotlight stories yet.</p>
+          <p className="col-span-3 rounded-lg border border-slate-700/70 bg-slate-900/40 px-4 py-4 text-slate-300">
+            No spotlight stories yet.
+          </p>
         )}
       </div>
     </div>

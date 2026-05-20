@@ -7,6 +7,7 @@ import config from "./config";
 import { Routers } from "./router";
 import globalErrorHandler from "./app/middleware/global.error.handler";
 import { User } from "./app/modules/user/user.model";
+import { NewsletterSubscriber } from "./app/modules/newsletter/newsletter.model";
 
 const app: Application = express();
 

@@ -10,8 +10,8 @@ const FeatureComponent = () => {
     return <LoadingAnimation />;
   }
   return (
-    <div className="mb-12">
-      <h2 className="text-2xl font-bold text-gray-300 mb-6">Featured Posts</h2>
+    <div className="mb-12 text-slate-100">
+      <h2 className="text-2xl font-bold text-slate-100 mb-6">Featured Posts</h2>
       <div className="grid gap-8 sm:grid-cols-2">
         {data?.posts?.length ?? 0 > 0 ? (
           data?.posts?.map((post: Post) => (
@@ -57,7 +57,9 @@ const FeatureComponent = () => {
             </div>
           ))
         ) : (
-          <div>Feature Post is not available!</div>
+          <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-4 py-5 text-slate-300">
+            Feature Post is not available!
+          </div>
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getShortenedText, ITopicData, topicsData } from "./stories.utils";
 import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
+import jsPDF from "jspdf";
 
 export interface IStories {
   uuid: string;
@@ -62,6 +63,35 @@ const handleCopyStory = async () => {
     setTimeout(() => setIsCopied(false), 2000);
        }
     };
+
+const handleExportPDF = () => {
+  if (!selectedStory) {
+    toast.error("No story available to export.");
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+
+    const title = selectedStory.title || "Story";
+    const content = selectedStory.content || "";
+
+    doc.setFontSize(18);
+    doc.text(title, 15, 20);
+
+    doc.setFontSize(12);
+
+    const splitText = doc.splitTextToSize(content, 180);
+    doc.text(splitText, 15, 35);
+
+    doc.save(`${title}.pdf`);
+
+    toast.success("PDF downloaded!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to export PDF.");
+  }
+};
   const handelPublishStory = async () => {
     if (!isLogin) {
       toast.error("Please login to publish the story.");
@@ -134,28 +164,45 @@ const handleCopyStory = async () => {
               <h3 className="text-xl font-semibold text-gray-300">
                 Generated Story
               </h3>
-              <span className="text-sm text-gray-800">
-              {selectedStory && (
-              <button
-   				 className="rounded-lg px-4 py-1 mr-2 bg-gray-700 text-gray-200 font-semibold"
-   				 onClick={handleCopyStory}
- 				 >
-   				 {isCopied ? "✓ Copied" : "📋 Copy"}
- 			 </button>
-			 )}
-                <button
-                  className={`rounded-lg px-4 py-1 font-semibold flex items-center space-x-2 cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-gray-300 ${
-                    loading
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:shadow-lg hover:shadow-indigo-500/50"
-                  }`}
-                  onClick={handelPublishStory}
-                >
-                  {loading ? "Publishing..." : "Publish"}
-                </button>
-              </span>
+              <div className="flex items-center gap-2">
+  {selectedStory && (
+    <>
+      <button
+        type="button"
+        className="rounded-lg px-4 py-1 bg-gray-700 text-gray-200 font-semibold cursor-pointer"
+        onClick={handleCopyStory}
+      >
+        {isCopied ? "✓ Copied" : "📋 Copy"}
+      </button>
+
+      <button
+        type="button"
+        className="rounded-lg px-4 py-1 bg-purple-700 text-gray-200 font-semibold cursor-pointer"
+        onClick={handleExportPDF}
+      >
+        📄 Export PDF
+      </button>
+    </>
+  )}
+
+  <button
+    type="button"
+    className={`rounded-lg px-4 py-1 font-semibold flex items-center space-x-2 cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-gray-300 ${
+      loading
+        ? "opacity-50 cursor-not-allowed"
+        : "hover:shadow-lg hover:shadow-indigo-500/50"
+    }`}
+    onClick={handelPublishStory}
+    disabled={loading}
+  >
+    {loading ? "Publishing..." : "Publish"}
+  </button>
+</div>
             </div>
-            <div className="prose max-w-none text-gray-400">
+            <div
+  id="story-content"
+  className="prose max-w-none text-gray-400"
+>
               {selectedStory ? (
                 <p className="break-words">{selectedStory.content}</p>
               ) : (

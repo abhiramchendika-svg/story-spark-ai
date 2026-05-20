@@ -29,14 +29,40 @@ const StoriesComponent = () => {
   const [generateModel] = useGenerateModelMutation();
   const [generateFreeModel] = useGenerateFreeModelMutation();
   const [selectedPrompt, setSelectedPrompt] = useState<string>("");
+  const [selectedGenre, setSelectedGenre] = useState<string>("");
   const [textareaValue, setTextareaValue] = useState<string>("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [guestRequestCount, setGuestRequestCount] = useState<number>(() =>
     parseInt(localStorage.getItem("guestRequestCount") || "0", 10),
   );
   const [showLimitModal, setShowLimitModal] = useState<boolean>(false);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   useEffect(() => {
@@ -67,11 +93,16 @@ const StoriesComponent = () => {
       return;
     }
     setLoading(true);
-   
+
     try {
+      const payload = {
+        prompt: selectedGenre
+          ? `[Genre: ${selectedGenre}] ${data.prompt}`
+          : data.prompt,
+      };
       const res = login
-        ? await generateModel(data).unwrap()
-        : await generateFreeModel(data).unwrap();
+        ? await generateModel(payload).unwrap()
+        : await generateFreeModel(payload).unwrap();
       if (res) {
         toast.success(res.message);
         setStories(res.data as IStories[]);
@@ -92,11 +123,7 @@ const StoriesComponent = () => {
     }
   };
 
-  const handlePromptSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = e.target.value;
-    setSelectedPrompt(selectedValue);
-    setTextareaValue(selectedValue);
-  };
+
 
   const handleClearPrompt = () => {
     setTextareaValue("");
@@ -110,27 +137,33 @@ const StoriesComponent = () => {
   return (
     <div className="bg-gradient-to-br animate-gradient-slow min-h-screen">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Link to="/">
-            <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded">
-              <i className="fa-solid fa-left-long"></i> BACK
-            </div>
-          </Link>
+        <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+          <div className="pt-2 w-full md:w-auto flex justify-start">
+            <Link to="/">
+              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
+                <i className="fa-solid fa-left-long"></i> BACK
+              </div>
+            </Link>
+          </div>
+
           {!login && (
-            <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm">
-              Free access for 3 requests —{" "}
-              <Link to="/login">
-                {""}
-                <span className="text-indigo-400 underline font-semibold">
-                  Login
-                </span>{" "}
-              </Link>
-              {""}
-              for more!
+            <div className="pt-2 text-center">
+              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
+                <span>
+                  Free access for 3 requests —{" "}
+                  <Link to="/login">
+                    <span className="text-indigo-400 underline font-semibold">
+                      Login
+                    </span>
+                  </Link>{" "}
+                  for more!
+                </span>
+              </div>
             </div>
           )}
-          <div className="">
-            <button className="mt-1 !rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded">
+
+          <div className="flex flex-col items-center md:items-end pt-2 w-full md:w-auto">
+            <button className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
               <span>
                 {" "}
                 <span className="text-gray-400 text-xs">Per Month</span>{" "}
@@ -143,7 +176,7 @@ const StoriesComponent = () => {
               </Link>
               <i className="fas fa-bolt text-yellow-400"></i>
             </button>
-            <div className="mt-3 text-gray-500 text-xs">
+            <div className="mt-3 text-gray-500 text-xs text-center md:text-right">
               <span>
                 This month request:{" "}
                 {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}
@@ -154,19 +187,34 @@ const StoriesComponent = () => {
           </div>
         </div>
 
-            <div className="mt-11">
-             <h1 className="text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
-              ✨ Turn Your Ideas Into{" "}
-               <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
-                Amazing Stories!
-               </span>{" "}
-              ✨
-            </h1>
+        <div className="mt-11">
+          <h1 className="text-gray-300 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center mb-12">
+            ✨ Turn Your Ideas Into{" "}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-blue-400">
+              Amazing Stories!
+            </span>{" "}
+            ✨
+          </h1>
 
           <div className="max-w-3xl mx-auto p-4">
             <div className="bg-blue-500/10 rounded-md p-4 border border-gray-400">
               <div className="relative">
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {["🎭 Drama", "😂 Comedy", "😱 Horror", "💕 Romance", "🚀 Sci-Fi", "🧙 Fantasy", "🔍 Mystery", "🌟 Adventure"].map((genre) => (
+                      <button
+                        key={genre}
+                        type="button"
+                        onClick={() => setSelectedGenre(selectedGenre === genre ? "" : genre)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedGenre === genre
+                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
+                            : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-gray-200"
+                          }`}
+                      >
+                        {genre}
+                      </button>
+                    ))}
+                  </div>
                   <div className="relative">
                     <textarea
                       {...register("prompt")}
@@ -216,11 +264,10 @@ const StoriesComponent = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
-                        loading
+                      className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${loading
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:shadow-lg hover:shadow-indigo-500/50"
-                      } transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 group cursor-pointer`}
+                        } transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 group cursor-pointer`}
                     >
                       <i className="fas fa-wand-magic-sparkles text-xl transition-transform duration-300 group-hover:animate-wiggle"></i>
                       {loading ? "Generating..." : "Generate"}
@@ -233,28 +280,39 @@ const StoriesComponent = () => {
               <h1 className="text-sm text-gray-500 mb-1">
                 Here are some example prompts you can refer to:-
               </h1>
-              <div className="relative">
-                <select
-                  className="w-full p-2 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none text-sm"
-                  value={selectedPrompt}
-                  onChange={handlePromptSelect}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full p-3 bg-slate-800 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex items-center justify-between text-sm text-left transition-all duration-200"
                 >
-                  <option value="" disabled>
-                    Select a prompt
-                  </option>
-                  {prompts.map((item) => (
-                    <option
-                      className="text-sm"
-                      key={item.id}
-                      value={item.prompt}
-                    >
-                      {item.prompt}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute top-0 right-0 h-full flex items-center pr-3 pointer-events-none text-gray-300">
-                  ▼
-                </div>
+                  <span className="truncate pr-4">
+                    {selectedPrompt || "Select a prompt"}
+                  </span>
+                  <span className={`text-gray-300 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}>
+                    ▼
+                  </span>
+                </button>
+
+                {isDropdownOpen && (
+                  <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl focus:outline-none divide-y divide-slate-700/30">
+                    {prompts.map((item) => (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPrompt(item.prompt);
+                            setTextareaValue(item.prompt);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-3 text-sm text-gray-400 hover:bg-indigo-600 hover:text-white transition-colors duration-150 whitespace-normal break-words leading-relaxed"
+                        >
+                          {item.prompt}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>

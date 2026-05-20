@@ -21,6 +21,17 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
+   name: "Analytics",
+   icon: "fas fa-chart-line",
+   path: "/dashboard/analytics",
+   roles: [
+     USER_ROLE.USER,
+     USER_ROLE.ADMIN,
+     USER_ROLE.SUPER_ADMIN,
+     USER_ROLE.WRITER,
+  ],
+},
+  {
     name: "Post Lists",
     icon: "fas fa-puzzle-piece",
     path: "/dashboard/post-lists",
