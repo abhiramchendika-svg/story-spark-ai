@@ -6,7 +6,7 @@ import config from "../../config";
 import { Secret } from "jsonwebtoken";
 import { ITokenPayload } from "../../interfaces/token";
 
-export const getToken = async (req: Request): Promise<ITokenPayload> => {
+export const getToken = (req: Request): ITokenPayload => {
   const token = req.headers.authorization as string;
   if (!token) {
     throw new ApiError(
