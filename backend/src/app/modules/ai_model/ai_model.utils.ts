@@ -4,9 +4,12 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { fetchImageURL } from "../../../utils/image_generation";
+import { GenerationAbortedError } from "../../../utils/generation_timeout";
 import config from "../../../config";
 import { v4 as uuidv4 } from "uuid";
 import { IAlternateEnding } from "./ai_model.interface";
+import ApiError from "../../../errors/api_error";
+import httpStatus from "http-status";
 
 const genAI = new GoogleGenerativeAI(config.gemini_api_key as string);
 
@@ -40,18 +43,27 @@ interface Story {
   imageURL?: string;
 }
 
+const throwIfAborted = (signal?: AbortSignal): void => {
+  if (signal?.aborted) {
+    throw new GenerationAbortedError();
+  }
+};
+
 export async function generateWithGeminiStories(
   prompt: string,
   wordLength: number = 250,
   numStories: number = 2,
   signal?: AbortSignal
 ): Promise<Story[]> {
+  throwIfAborted(signal);
+
   try {
     const chatSession = model.startChat({
       generationConfig,
       safetySettings,
       history: [],
     });
+
     const response = await chatSession.sendMessage(
       `Generate ${numStories} different short stories based on the following prompt: "${prompt}".
         Each story should be in JSON format with fields: "title", "content", and "tag".
@@ -59,27 +71,17 @@ export async function generateWithGeminiStories(
         Return the output as a JSON array.`,
       { signal }
     );
+
+    throwIfAborted(signal);
+
     const text = response.response.text();
-    const stories: Story[] = JSON.parse(text);
-
-    // Skip image fetching if the request was already aborted
-    if (signal?.aborted) {
-      return stories;
-    }
-
-    const imagePromises = stories.map((story) => fetchImageURL(story.tag));
-    const imageResults = await Promise.all(imagePromises);
+ main
     return stories.map((story, index) => ({
       ...story,
       imageURL: imageResults[index].imageUrl,
       uuid: uuidv4(),
     }));
-  } catch (error) {
-    // Re-throw abort errors so the caller can distinguish timeouts from failures
-    if (error instanceof Error && error.name === "AbortError") {
-      throw error;
-    }
-    return [];
+ main
   }
 }
 
@@ -115,10 +117,50 @@ export async function generateAlternateEndingsWithGemini(
       Return the output as a JSON array of objects with the fields: "style", "ending", and "fullStory".`
     );
     const text = response.response.text();
-    return JSON.parse(text);
-  } catch (error) {
-    console.error("Error generating alternate endings with Gemini:", error);
-    return [];
+    
+    let parsed: any;
+    try {
+      parsed = JSON.parse(text);
+    } catch (parseError: unknown) {
+      const parseErrorMsg = parseError instanceof Error ? parseError.message : String(parseError);
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        `Gemini returned invalid JSON for alternate endings: ${parseErrorMsg}`
+      );
+    }
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Invalid AI response: Expected a non-empty JSON array."
+      );
+    }
+
+    const isValid = parsed.every(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        typeof item.style === "string" &&
+        typeof item.ending === "string" &&
+        typeof item.fullStory === "string"
+    );
+
+    if (!isValid) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Invalid AI response: Alternate endings are malformed."
+      );
+    }
+
+    return parsed;
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      `AI generation of alternate endings failed: ${errorMsg}`
+    );
   }
 }
-
