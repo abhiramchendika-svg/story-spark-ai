@@ -19,7 +19,6 @@ import DashboardComponent from "./components/dashboard/dashboard.component";
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
 import SettingComponent from "./components/dashboard/settings/settings.component";
-import StoriesComponent from "./components/stories/stories.component";
 import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
 import UserComponent from "./components/dashboard/users/user.component";
 import PricingComponent from "./components/pricing/pricing.component";
@@ -48,6 +47,7 @@ import ResourcesListComponent from "./components/community/resources_list.compon
 import ResourceDetailComponent from "./components/community/resource_detail.component";
 import MagicCursorComponent from "./components/magic-cursor/magic_cursor.component";
 import ContributorsComponent from "./components/footer/contributors";
+import BranchingStory from "./components/stories/BranchingStory";
 import ReportBug from "./components/report-bug/ReportBug";
 
 
@@ -163,6 +163,278 @@ const router = createBrowserRouter([
   },
 ]);
 
+            <Route
+              path="list"
+              element={
+                <ProtectedRoute
+                  element={<UserListComponent />}
+                  allowedRoles={[
+                    USER_ROLE.USER,
+                    USER_ROLE.ADMIN,
+                    USER_ROLE.SUPER_ADMIN,
+                    USER_ROLE.WRITER,
+                  ]}
+                />
+              }
+            />
+          </Route>
+
+          <Route
+            path="writers"
+            element={
+              <ProtectedRoute
+                element={<WriterApplicationComponent />}
+                allowedRoles={[
+                  USER_ROLE.WRITER,
+                  USER_ROLE.ADMIN,
+                  USER_ROLE.SUPER_ADMIN,
+                  USER_ROLE.USER,
+                ]}
+              />
+            }
+          />
+
+        </Route>
+        <Route
+          path="/stories"
+          element={
+            <RootLayout>
+              <BranchingStory />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <RootLayout>
+              <LoginComponent />
+            </RootLayout>
+          }
+        />
+
+        <Route
+          path="/auth/email-validation"
+          element={<EmailValidationComponent />}
+        />
+        <Route path="/payment" element={<PaymentComponent />} />
+        <Route
+          path="/signup"
+          element={
+            <RootLayout>
+              <SignUpComponent />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <RootLayout>
+              <PricingComponent />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/explore"
+          element={
+            <ProtectedRoute
+              element={
+                <RootLayout>
+                  <ExploreComponent />
+                </RootLayout>
+              }
+              allowedRoles={[
+                USER_ROLE.USER,
+                USER_ROLE.WRITER,
+                USER_ROLE.ADMIN,
+                USER_ROLE.SUPER_ADMIN,
+              ]}
+            />
+          }
+        />
+        <Route
+          path="/help"
+          element={
+            <RootLayout>
+              <HelpCenterComponent />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/bookmarks"
+          element={
+            <ProtectedRoute
+              element={
+                <RootLayout>
+                  <BookmarksComponent />
+                </RootLayout>
+              }
+              allowedRoles={[
+                USER_ROLE.USER,
+                USER_ROLE.WRITER,
+                USER_ROLE.ADMIN,
+                USER_ROLE.SUPER_ADMIN,
+              ]}
+            />
+          }
+        />
+        <Route
+          path="/post/:id"
+          element={
+            <RootLayout>
+              <PostDetailsComponent />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/about-us"
+          element={
+            <RootLayout>
+              <AboutUsComponent />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/career"
+          element={
+            <RootLayout>
+              <CareerComponent />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/contact-us"
+          element={
+            <ProtectedRoute
+              element={
+                <RootLayout>
+                  <Contact />
+                </RootLayout>
+              }
+              allowedRoles={[
+                USER_ROLE.USER,
+                USER_ROLE.WRITER,
+                USER_ROLE.ADMIN,
+                USER_ROLE.SUPER_ADMIN,
+              ]}
+            />
+          }
+        />
+        <Route
+          path="/blog"
+          element={
+            <RootLayout>
+              <BlogComponent />
+            </RootLayout>
+          }
+        />
+              <Route
+        path="/privacy-policy"
+        element={
+          <RootLayout>
+            <PrivacyPolicy />
+          </RootLayout>
+        }
+      />
+        <Route
+          path="/terms"
+          element={
+            <RootLayout>
+              <Terms />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/help-center"
+          element={
+            <RootLayout>
+              <HelpCenterComponent />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/guidelines"
+          element={
+            <RootLayout>
+              <GuidelinesComponent />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/community"
+          element={
+            <ProtectedRoute
+              element={
+                <RootLayout>
+                  <CommunityComponent />
+                </RootLayout>
+              }
+              allowedRoles={[
+                USER_ROLE.USER,
+                USER_ROLE.WRITER,
+                USER_ROLE.ADMIN,
+                USER_ROLE.SUPER_ADMIN,
+              ]}
+            />
+          }
+        />
+        <Route
+          path="/resources"
+          element={
+            <ProtectedRoute
+              element={
+                <RootLayout>
+                  <ResourcesListComponent />
+                </RootLayout>
+              }
+              allowedRoles={[
+                USER_ROLE.USER,
+                USER_ROLE.WRITER,
+                USER_ROLE.ADMIN,
+                USER_ROLE.SUPER_ADMIN,
+              ]}
+            />
+          }
+        />
+        <Route
+          path="/resources/:resourceName"
+          element={
+            <ProtectedRoute
+              element={
+                <RootLayout>
+                  <ResourceDetailComponent />
+                </RootLayout>
+              }
+              allowedRoles={[
+                USER_ROLE.USER,
+                USER_ROLE.WRITER,
+                USER_ROLE.ADMIN,
+                USER_ROLE.SUPER_ADMIN,
+              ]}
+            />
+          }
+        />
+        <Route
+          path="/contributors"
+          element={
+            <RootLayout>
+              <ContributorsComponent />
+            </RootLayout>
+          }
+        />
+        <Route path="/analytics" element={<AnalyticsDashboard />} />
+        <Route path="/collab" element={<CollabHome />} />
+        <Route path="/collab/:roomId" element={<CollabRoom />} />
+        <Route
+          path="*"
+          element={
+            <RootLayout>
+              <NotFoundComponent />
+            </RootLayout>
+          }
+        />
+      </Routes>
+    </Router>
+  );
 // =========================================================================
 // 3. TARGET RUNTIME PROVIDER ENGINES
 // =========================================================================
