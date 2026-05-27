@@ -33,8 +33,7 @@ const GithubcontributorsComponent : React.FC = () =>{
         setGitHubContributors(data);
     
       
-      }catch(e){
-        console.log(e);
+      }catch{
       }
         
     };

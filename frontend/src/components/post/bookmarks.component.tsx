@@ -23,7 +23,7 @@ const BookmarksComponent = () => {
     setSize(pageSize);
   };
 
-  const allPosts = data?.posts || [];
+  const allPosts: Post[] = (data?.posts ?? []) as Post[];
 
   // Implement client-side instant search for bookmarks
   const filteredPosts = allPosts.filter(
