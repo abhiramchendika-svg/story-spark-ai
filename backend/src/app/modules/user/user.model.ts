@@ -98,5 +98,11 @@ UserSchema.pre("save", async function (next) {
   
   next();
 });
+UserSchema.pre("save", function (next) {
+  if (this.readingHistory && this.readingHistory.length > 500) {
+    this.readingHistory = this.readingHistory.slice(-500);
+  }
+  next();
+});
 
 export const User = model<IUser, UserModel>("User", UserSchema);
