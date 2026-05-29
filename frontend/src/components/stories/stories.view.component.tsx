@@ -52,6 +52,7 @@ function getInitials(title?: string): string {
 interface StoryCoverImageProps {
   title?: string;
   tag?: string;
+  imageUrl?: string;
   size?: "full" | "thumb";
   className?: string;
   style?: React.CSSProperties;
@@ -60,12 +61,17 @@ interface StoryCoverImageProps {
 const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
   title = "",
   tag = "default",
+  imageUrl = "",
   size = "full",
   className = "",
   style = {},
 }) => {
   const theme = getGenreTheme(tag);
   const initials = getInitials(title);
+
+  // Fallback high-fidelity asset image link requested in issue #1246 description
+  const defaultPlaceholder = "https://images.unsplash.com/photo-11455390582262-044cdead277a?w=600&auto=format&fit=crop&q=80";
+  const finalImageSrc = imageUrl && imageUrl.trim() !== "" && !imageUrl.includes("placeholder.com") ? imageUrl : defaultPlaceholder;
 
   if (size === "thumb") {
     return (
@@ -102,7 +108,9 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
         minHeight: "192px",
         position: "relative",
         overflow: "hidden",
-        background: `linear-gradient(${theme.gradient})`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url(${finalImageSrc})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         borderRadius: "inherit",
         ...style,
       }}
@@ -140,7 +148,7 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
       {/* Genre pill */}
       <div style={{
         position: "absolute", top: "14px", left: "14px",
-        background: "rgba(0,0,0,0.28)",
+        background: "rgba(0,0,0,0.4)",
         backdropFilter: "blur(6px)",
         color: "#fff",
         fontSize: "0.65rem",
@@ -155,37 +163,39 @@ const StoryCoverImage: React.FC<StoryCoverImageProps> = ({
         {tag}
       </div>
 
-      {/* Large faded initials centred */}
-      <div style={{
-        position: "absolute", inset: 0,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
+      {/* Large faded initials centered if background asset image fails to show up */}
+      {!imageUrl && (
         <div style={{
-          fontSize: "5rem",
-          fontWeight: 900,
-          color: "rgba(255,255,255,0.12)",
-          letterSpacing: "-0.04em",
-          lineHeight: 1,
-          userSelect: "none",
-          pointerEvents: "none",
+          position: "absolute", inset: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          {initials}
+          <div style={{
+            fontSize: "5rem",
+            fontWeight: 900,
+            color: "rgba(255,255,255,0.12)",
+            letterSpacing: "-0.04em",
+            lineHeight: 1,
+            userSelect: "none",
+            pointerEvents: "none",
+          }}>
+            {initials}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Title at bottom */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
-        background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)",
-        padding: "32px 14px 12px",
+        background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)",
+        padding: "40px 14px 14px",
       }}>
         <p style={{
           margin: 0,
           color: "#fff",
-          fontSize: "0.9rem",
+          fontSize: "0.95rem",
           fontWeight: 700,
           lineHeight: 1.3,
-          textShadow: "0 1px 6px rgba(0,0,0,0.5)",
+          textShadow: "0 2px 8px rgba(0,0,0,0.8)",
           display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
@@ -323,13 +333,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
       setIsGeneratingEndings(false);
     }
   };
-  if (!stories.length) {
-  return (
-    <div className="text-center text-gray-400 py-10">
-      No stories generated yet. Start by entering a prompt ✨
-    </div>
-  );
-}
+
   const handleApplyEnding = (endingData: { style: string; ending: string; fullStory: string }) => {
     if (!selectedStory) return;
     const updatedStory = { ...selectedStory, content: endingData.fullStory };
@@ -526,7 +530,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
 
       const safeTitle = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
       doc.save(`${safeTitle}.pdf`);
-      toast.dismiss(toastId);
+      toast.withTimeout(toastId);
       toast.success("Premium PDF downloaded!");
     } catch (error) {
       console.error(error); toast.dismiss(toastId); toast.error("Failed to export PDF.");
@@ -583,7 +587,6 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   if (!selectedStory) {
     return null;
   }
-  if (!selectedStory) return null;
 
   return (
     <div className="mt-16 px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto pb-10">
@@ -615,7 +618,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
               </div>
             </div>
 
-            {/* ── SPOT 1: Story selector thumbnails (circular) ── */}
+            {/* ── Story selector thumbnails (circular layout) ── */}
             <div className="flex justify-start sm:justify-end">
               <div className="flex -space-x-5">
                 {stories && stories.length > 0 && stories.map((story) => (
@@ -630,6 +633,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
                     <StoryCoverImage
                       title={story.title}
                       tag={story.tag}
+                      imageUrl={story.imageURL}
                       size="thumb"
                       style={{ width: "100%", height: "100%" }}
                     />
@@ -845,10 +849,11 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
           <div className="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden group">
             <div className="relative flex flex-col rounded-lg">
               <div className="relative m-3 overflow-hidden text-white rounded-xl" style={{ height: "192px" }}>
-                {/* ── SPOT 2: Rectangular cover image ── */}
+                {/* ── Updated Cover Image with dynamic imageURL support ── */}
                 <StoryCoverImage
                   title={selectedStory.title}
                   tag={selectedStory.tag}
+                  imageUrl={selectedStory.imageURL}
                   className="transition-transform duration-500 group-hover:scale-105"
                   style={{ width: "100%", height: "100%", borderRadius: "0.75rem" }}
                 />
