@@ -29,16 +29,19 @@ const toggleReaction = async (
   }
 
 
+
   const newReaction = await Reaction.create({
     postId: new Types.ObjectId(postId),
 
+
     userId: user._id,
-    type: type,
+    postId: post._id,
   });
 
 
 
   return newReaction;
+
 
 
 };
