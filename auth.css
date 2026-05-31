@@ -29,6 +29,7 @@ body {
         radial-gradient(circle at bottom right, rgba(255, 182, 106, 0.12), transparent 20%),
         linear-gradient(180deg, #090b12 0%, #0d111b 100%);
     background-color: #090b12;
+    scroll-behavior: smooth;
 }
 
 /* ── Keyframe Animations ── */
