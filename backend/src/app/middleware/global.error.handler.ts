@@ -70,11 +70,11 @@ const globalErrorHandler: ErrorRequestHandler = (
   }
 
   res.status(statusCode).json({
-  success: false,
-  message,
-  errorMessages,
-  stack: config.env != "production" ? err.stack : undefined,
-});
+    success: false,
+    message,
+    errorMessages,
+    stack: config.env != "production" ? err.stack : undefined,
+  });
 };
 
 export default globalErrorHandler;
