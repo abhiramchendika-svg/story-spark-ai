@@ -31,5 +31,8 @@ jobs:
       - name: Work around pnpm optional dependency bug (Tailwind CSS oxide Linux binary)
         run: pnpm install -w story-spark-ai-frontend --no-save @tailwindcss/oxide-linux-x64-gnu
 
-      - name: Build
-        run: pnpm run build
+      - name: Build backend
+        run: pnpm --filter story-spark-ai-backend build
+
+      - name: Build frontend
+        run: pnpm --filter story-spark-ai-frontend build
