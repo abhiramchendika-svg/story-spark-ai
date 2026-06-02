@@ -34,17 +34,10 @@ const SSInput = <T extends FieldValues>({
   autoFocus
 }: SSInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
-
-
-
-  const inputType =
-
-    type === "password" ? (showPassword ? "text" : "password") : type;
-
-
+  const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
 
   return (
-    <div className="w-full min-w-0">
+    <div className="w-full min-w-0 overflow-hidden">
       <label htmlFor={name} className="block text-sm font-medium text-gray-600 dark:text-gray-400">
         {label}
       </label>
@@ -55,36 +48,36 @@ const SSInput = <T extends FieldValues>({
           </span>
         )}
 
-       <input
-  type={inputType}
-  id={name}
-  className={`w-full box-border pl-6 sm:pl-8 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 transition-all duration-200 ${
-    error
-      ? "border-2 border-red-500"
-      : "focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-  }`}
-  placeholder={placeholder}
-  autoComplete={autoComplete}
-  autoFocus={autoFocus}
-  {...register(name, validation)}
-/>
+        <input
+          type={inputType}
+          id={name}
+          className={`block w-full max-w-full min-w-0 box-border appearance-none rounded-lg border pl-6 sm:pl-8 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-200 bg-white dark:bg-slate-800 transition-all duration-200 ${
+            error
+              ? "border-2 border-red-500"
+              : "border-gray-300 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+          }`}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          autoFocus={autoFocus}
+          {...register(name, validation)}
+        />
         {type === "password" && (
-  <button
-    type="button"
-    onClick={() => setShowPassword(!showPassword)}
-    className="absolute inset-y-0 right-2 flex items-center text-gray-500"
-    aria-label={showPassword ? "Hide password" : "Show password"}
-    title={showPassword ? "Hide password" : "Show password"}
-  >
-    <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
-  </button>
-)}
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            title={showPassword ? "Hide password" : "Show password"}
+          >
+            <i className={showPassword ? "fi fi-rr-eye" : "fi fi-rr-eye-crossed"}></i>
+          </button>
+        )}
       </div>
       {error && (
         <p className="text-red-400 text-sm mt-1 w-full break-words overflow-hidden">
-        {error.message}
+          {error.message}
         </p>
-    )}
+      )}
     </div>
   );
 };
