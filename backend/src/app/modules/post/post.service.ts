@@ -308,36 +308,48 @@ const getPostsByTag = async (tag: string, excludeId?: string) => {
 
 const toggleBookmark = async (postId: string, token: ITokenPayload) => {
   const { email } = token;
+
   const user = await User.findOne({ email });
+
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
-  if (!postExists) {
-  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  const post = await Post.findOne({
+    _id: postId,
+    isDeleted: { $ne: true },
+  });
 
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
-  
-  // Check bookmark status atomically via a DB query instead of loading the full document
-  const isBookmarked = await Post.exists({ _id: postId, bookmarks: user._id });
+
+  // Check bookmark status atomically
+  const isBookmarked = await Post.exists({
+    _id: postId,
+    bookmarks: user._id,
+  });
 
   if (isBookmarked) {
-    // Remove bookmark atomically
     await Post.updateOne(
       { _id: postId },
       { $pull: { bookmarks: user._id } }
     );
-    return { message: "Bookmark removed", bookmarked: false };
+
+    return {
+      message: "Bookmark removed",
+      bookmarked: false,
+    };
   } else {
-    // Add bookmark atomically — $addToSet prevents duplicates
     await Post.updateOne(
       { _id: postId },
       { $addToSet: { bookmarks: user._id } }
     );
-    return { message: "Bookmark added", bookmarked: true };
+
+    return {
+      message: "Bookmark added",
+      bookmarked: true,
+    };
   }
 };
 
@@ -500,9 +512,5 @@ export const PostService = {
   deletePost,
   remixStory,       // Exposed service for AI story variations
   translateStory,   // Exposed service for localized modifications
-};
-  remixStory,
-  translateStory,
   getGenres,
 };
-
