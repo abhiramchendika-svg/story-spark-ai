@@ -15,24 +15,28 @@ const aiModel = z.object({
       .string({ required_error: "Prompt is required!" })
       .trim()
       .min(1, "Prompt cannot be empty or whitespace only!")
-      .max(2000, "Prompt must not exceed 2000 characters.")   // ← ADDED
+      .max(2000, "Prompt must not exceed 2000 characters.")
       .refine((val) => {
-        const stripped = val.replace(/^\[Genre:.*?\]\s*/, '').trim();
+        const stripped = val.replace(/^\[Genre:.*?\]\s*/, "").trim();
         return stripped.length > 0;
       }, { message: "Prompt must contain actual story content, not just a genre." }),
-    wordLength: z                                              // ← ADDED
+
+    wordLength: z
       .number()
       .int("wordLength must be a whole number.")
       .min(50, "wordLength must be at least 50.")
       .max(1000, "wordLength must not exceed 1000.")
       .optional(),
-    numStories: z                                              // ← ADDED
+
+    numStories: z
       .number()
       .int("numStories must be a whole number.")
       .min(1, "numStories must be at least 1.")
       .max(5, "numStories must not exceed 5.")
       .optional(),
+
     language: z.string().optional(),
+
     tone: z
       .enum(VALID_TONES, {
         errorMap: () => ({
@@ -40,6 +44,7 @@ const aiModel = z.object({
         }),
       })
       .optional(),
+
     characters: z
       .array(
         z.object({
@@ -81,18 +86,18 @@ const aiChat = z.object({
   body: z.object({
     message: z
       .string({ required_error: "Message is required!" })
-      .min(1, "Message cannot be empty.")                    // ← ADDED
-      .max(2000, "Message must not exceed 2000 characters."), // ← ADDED
+      .min(1, "Message cannot be empty.")
+      .max(2000, "Message must not exceed 2000 characters."),
     history: z
       .array(
         z.object({
           role: z.enum(["user", "model"]),
           parts: z
             .string()
-            .max(2000, "Each history message must not exceed 2000 characters."), // ← ADDED
+            .max(2000, "Each history message must not exceed 2000 characters."),
         })
       )
-      .max(20, "Chat history must not exceed 20 messages.")  // ← ADDED
+      .max(20, "Chat history must not exceed 20 messages.")
       .optional(),
   }),
 });

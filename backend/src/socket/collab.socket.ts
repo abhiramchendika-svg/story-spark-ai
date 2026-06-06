@@ -3,7 +3,7 @@ import crypto from "crypto";
 import logger from "../utils/logger.util";
 import { AiModelService } from "../app/modules/ai_model/ai_model.service";
 import config from "../config";
-import { JwtHalers } from "../utils/jwt.helper";
+import { JwtHelpers } from "../utils/jwt.helper";
 import type { Secret } from "jsonwebtoken";
 import { User } from "../app/modules/user/user.model";
 import { reserveUserQuota } from "../app/modules/ai_model/quota.service";
@@ -64,16 +64,9 @@ export const setupCollabSocket = (io: Server) => {
     try {
       const token = socket.handshake.auth?.token as string | undefined;
       if (!token) return next(new Error("Unauthorized"));
-
-      const verifiedUser = JwtHalers.verifyToken(
-        token,
-        config.jwt.secret as Secret,
-      );
-      const userId =
-        verifiedUser._id ||
-        verifiedUser.userId ||
-        verifiedUser.sub ||
-        verifiedUser.id;
+      
+      const verifiedUser = JwtHelpers.verifyToken(token, config.jwt.secret as Secret);
+      const userId = verifiedUser._id || verifiedUser.userId || verifiedUser.sub || verifiedUser.id;
       if (!userId) return next(new Error("Unauthorized"));
 
       socket.data.userId = userId.toString();
@@ -228,14 +221,12 @@ socket.on("collab:ai_continue", async ({ roomId }) => {
         ? `Continue the following story naturally and creatively in 2-3 sentences based on the context. Return ONLY the continuation text, do not add any quotes, titles, JSON, formatting, or labels:\n\nStory Context:\n${storyContext}\n\nContinuation:`
         : "Start a collaborative story naturally and creatively in 2-3 sentences. Return ONLY the story text, do not add any quotes, titles, JSON, formatting, or labels.";
 
-      const result = await AiModelService.aiFreeModelGenerate({
+      const result = await AiModelService.aiFreeStoryContinuation({
         prompt,
-        wordLength: 120,
-        numStories: 1,
         language: "English",
       });
 
-      const continuationText = result?.[0]?.content?.trim();
+      const continuationText = result?.continuation?.trim();
 
       if (!continuationText) {
         throw new Error("Empty response from AI");
