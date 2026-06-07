@@ -67,12 +67,20 @@ export const setupAxiosInterceptors = () => {
 
           if (newAccessToken) {
             setToLocalStorage(AUTH_KEY, newAccessToken);
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            if (originalRequest.headers.set) {
+              originalRequest.headers.set("Authorization", `Bearer ${newAccessToken}`);
+            } else {
+              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            }
             return instance(originalRequest);
+          } else {
+            throw new Error("No access token returned");
           }
-        } catch {
+        } catch (error) {
           removeFromLocalStorage(AUTH_KEY);
-          window.location.href = "/login";
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
           return Promise.reject(error);
         }
       }

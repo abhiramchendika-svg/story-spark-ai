@@ -228,7 +228,7 @@ const DashboardLayout: React.FC = () => {
       <header className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between dark:bg-[#0a1020] dark:border-white/[0.06]">
         <div className="flex items-center gap-4">
           <Link to="/">
-            <button className="w-9 h-9 rounded-lg bg-white/[0.7] hover:bg-white transition text-slate-900 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] dark:text-white">
+            <button aria-label="Go back to home" className="w-9 h-9 rounded-lg bg-white/[0.7] hover:bg-white transition text-slate-900 dark:bg-white/[0.05] dark:hover:bg-white/[0.1] dark:text-white">
               <i className="fas fa-arrow-left"></i>
             </button>
           </Link>
@@ -239,7 +239,7 @@ const DashboardLayout: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4 text-slate-900 dark:text-white">
-          <button className="relative">
+          <button aria-label="Notifications" className="relative">
             <i className="fas fa-bell text-lg"></i>
             <span className="absolute -top-1 -right-2 bg-red-500 text-[10px] px-1 rounded-full">
               5

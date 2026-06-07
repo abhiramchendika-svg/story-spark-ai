@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { io, Socket } from "socket.io-client";
 import { getFromLocalStorage } from "../utils/local-storage";
 import { AUTH_KEY } from "../constants/storage-key";

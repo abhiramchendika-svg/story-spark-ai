@@ -102,12 +102,14 @@ const ChatComponent: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsMinimized(!isMinimized)}
+                  aria-label="Minimize chat"
                   className="p-1 hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <Minus size={18} />
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
+                  aria-label="Close chat"
                   className="p-1 hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <X size={18} />
@@ -185,6 +187,7 @@ const ChatComponent: React.FC = () => {
                     <button
                       type="button"
                       onClick={clearChat}
+                      aria-label="Clear chat history"
                       className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                       title="Clear chat"
                     >
@@ -200,6 +203,7 @@ const ChatComponent: React.FC = () => {
                     <button
                       type="submit"
                       disabled={!message.trim() || isLoading}
+                      aria-label="Send message"
                       className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all"
                     >
                       <Send size={20} />
@@ -218,6 +222,7 @@ const ChatComponent: React.FC = () => {
           setIsOpen(!isOpen);
           setIsMinimized(false);
         }}
+        aria-label={isOpen ? "Close chat" : "Open chat"}
         className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 ${
           isOpen
             ? "bg-slate-800 text-white rotate-90"

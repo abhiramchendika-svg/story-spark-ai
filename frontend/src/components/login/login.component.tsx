@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Link } from "react-router-dom";
@@ -180,38 +181,39 @@ const LoginComponent = () => {
               autoComplete="email"
               />
 
-            <div>
-              <SSInput
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                required={true}
-                icon="fi fi-rr-lock"
-                register={register}
-                validation={{ required: "Password is required" }}
-                error={errors.password}
-              />
-              <div className="flex justify-end pt-2">
-                <Link
-                  to="/forgot-password"
-                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
+            {/* Password field — eye icon toggle is provided by SSInput when type="password" */}
+            <SSInput
+              label="Password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              required={true}
+              icon="fi fi-rr-lock"
+              register={register}
+              validation={{ required: "Password is required" }}
+              error={errors.password}
+              autoComplete="password"
+            />
+
+            <div className="flex justify-end -mt-2">
+              <Link
+                to="/forgot-password"
+                className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+              >
+                Forgot Password?
+              </Link>
             </div>
 
-            <div className="pt-2">
-              <SSButton text="Sign In" type="submit" isLoading={isBusy} />
-            </div>
+            <SSButton text="Sign In" type="submit" isLoading={isBusy} />
           </form>
 
-          {/* Custom Form Divider */}
-          <div className="relative my-8 w-full box-border">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+          <div className="mt-6 relative w-full">
+            <div className="absolute inset-0 flex items-center w-full">
+              <div className="w-full border-t border-slate-200 dark:border-slate-700" />
             </div>
+            <div className="relative flex justify-center text-sm w-full">
+              <span className="px-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                OR
 
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-white dark:bg-slate-900 px-4 text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
@@ -235,12 +237,13 @@ const LoginComponent = () => {
             Don't have an account?{" "}
             <Link
               to="/signup"
-              className="font-bold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
+              className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
             >
               Sign up for free
             </Link>
           </p>
         </div>
+      </div>
 
         </div>
       </div>

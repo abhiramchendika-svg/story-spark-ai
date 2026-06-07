@@ -36,6 +36,7 @@ const TopHeaderComponent = () => {
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
               <button
                 type="button"
+                aria-label="Search"
                 className="!rounded-button p-2 text-gray-400 hover:text-gray-500"
               >
                 <i className="fas fa-search"></i>
@@ -44,6 +45,7 @@ const TopHeaderComponent = () => {
                 <div>
                   <button
                     type="button"
+                    aria-label="Notifications"
                     className="!rounded-button p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none cursor-pointer"
                     onClick={() => setShowNotification(true)}
                   >
@@ -55,6 +57,7 @@ const TopHeaderComponent = () => {
                 <div>
                   <button
                     type="button"
+                    aria-label="User profile"
                     className="!rounded-button bg-white flex text-sm rounded-full focus:outline-none"
                   >
                     <img

@@ -30,9 +30,7 @@ export default {
   database_url: (() => {
     const url = process.env.DATABASE_URL?.trim();
     if (!url) {
-      throw new Error(
-        "DATABASE_URL environment variable is required. See backend/.env.example for setup instructions."
-      );
+      return "mongodb://127.0.0.1:27017/story_spark_ai";
     }
     return url;
   })(),
@@ -45,8 +43,8 @@ export default {
   jwt: {
     secret: requiredEnv("JWT_SECRET"),
     refresh_secret: requiredEnv("JWT_REFRESH_SECRET"),
-    expires_in: process.env.JWT_EXPIRES_IN,
-    refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
+    expires_in: process.env.JWT_EXPIRES_IN || "15m",
+    refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   },
   default_admin_password: process.env.DEFAULT_ADMIN_PASSWORD,
   openai_key: process.env.OPEN_AI_KEY,

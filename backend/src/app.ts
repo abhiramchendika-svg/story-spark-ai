@@ -40,11 +40,11 @@ const corsOrigins =
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin && process.env.NODE_ENV === 'production') {
-        return callback(new Error('Origin header required in production'));
+      if (!origin) {
+        return callback(new Error("Origin header required"));
       }
 
-      if (!origin || corsOrigins.includes(origin)) {
+      if (corsOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Blocked by Cross-Origin Resource Sharing (CORS) Policy"));
