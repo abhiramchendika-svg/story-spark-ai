@@ -1,18 +1,13 @@
+import React, { lazy, Suspense } from "react";
+
 import React from "react";
 
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
-import StoryInspirationWrapper from "./components/StoryInspirationWrapper";
-import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
-import CollabHome from "./components/collab/CollabHome";
-import CollabRoom from "./components/collab/CollabRoom";
 
 import { USER_ROLE } from "./constants/role";
 import { getUserInfo } from "./services/auth.service";
-
 import RootLayout from "./components/layout/root_layout.component";
 import DashboardLayout from "./components/dashboard/dashboard_layout.component";
-
 import AboutUsComponent from "./components/footer/about-us.tsx";
 import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
 import BlogComponent from "./components/footer/blog.tsx";
@@ -44,8 +39,14 @@ import PrivacyPolicy from "./components/footer/Privacy.tsx";
 import ProfileComponent from "./components/dashboard/profile/profile.component";
 import PublishedStoriesComponent from "./components/dashboard/posts/published_stories.component";
 import ReportBug from "./components/report-bug/ReportBug";
+import AnalyticsPage from "./components/dashboard/analytics/analytics.page";
+import StoryWorkspace from "./components/story/StoryWorkspace";
 import ResourceDetailComponent from "./components/community/resource_detail.component";
 import ResourcesListComponent from "./components/community/resources_list.component";
+import SettingComponent from "./components/dashboard/settings/settings.component";
+import SignUpComponent from "./components/signup/signup.component";
+import SimpleProtectedRoute from "./components/ProtectedRoute";
+
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import SettingComponent from "./components/dashboard/settings/settings.component";
@@ -59,6 +60,7 @@ import Terms from "./components/footer/terms.tsx";
 import UserComponent from "./components/dashboard/users/user.component";
 import WriterApplicationComponent from "./components/dashboard/writers/writer_application.component";
 import WritingAssistantComponent from "./components/writing-assistant/writing_assistant.component";
+
 
 type ProtectedRouteProps = {
   allowedRoles: string[];
@@ -80,11 +82,15 @@ const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
 
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
 const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
+const CollabRoomComponent = CollabRoom as unknown as React.ComponentType<any>;
+const SafeContributorsComponent = ContributorsComponent as unknown as React.ComponentType<any>;
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
+      <Suspense fallback={<LoadingAnimation />}>
+        <ScrollToTopButton />
       <>
         <ScrollToTopButton />
         <MagicCursorComponent />
@@ -92,7 +98,7 @@ const router = createBrowserRouter([
         <RootLayout>
           <Outlet />
         </RootLayout>
-      </>
+      </Suspense>
     ),
     children: [
       { index: true, element: <><HeroSectionComponent /><HomeComponent /></> },
@@ -159,13 +165,11 @@ const router = createBrowserRouter([
   },
 
   // Isolated layout branches
-  { path: "/auth/email-validation", element: <EmailValidationComponent /> },
   {
     element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
     children: [
-      { path: "/payment", element: <PaymentComponent /> },
       { path: "/collab", element: <CollabHome /> },
-      { path: "/collab/:roomId", element: <CollabRoom /> },
+      { path: "/collab/:roomId", element: <CollabRoomComponent /> },
     ],
   },
 
