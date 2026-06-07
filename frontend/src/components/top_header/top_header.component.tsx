@@ -1,8 +1,11 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import logo from "../../assets/logo.png";
+import { useNavigate } from "react-router-dom";
 
 const TopHeaderComponent = () => {
   const [, setShowNotification] = useState<boolean>(false);
+  const navigate = useNavigate();
+
   return (
     <div className="sticky top-0 z-50">
       <div className="relative z-10 mx-auto max-w-8xl px-6 py-4 gradient-bg">
@@ -59,6 +62,7 @@ const TopHeaderComponent = () => {
                     type="button"
                     aria-label="User profile"
                     className="!rounded-button bg-white flex text-sm rounded-full focus:outline-none"
+                    onClick={() => navigate("/dashboard/profile")}
                   >
                     <img
                       className="h-8 w-8 rounded-full"
