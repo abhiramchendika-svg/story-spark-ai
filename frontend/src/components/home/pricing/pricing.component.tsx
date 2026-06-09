@@ -269,7 +269,7 @@ const PricingComponent: React.FC = () => {
                 className={`mt-10 w-full rounded-xl px-4 py-4 font-bold uppercase tracking-wide transition-all active:scale-[0.98] ${
                   plan.highlight
                     ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-500 hover:to-indigo-500"
-                    : "border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+                    :  "bg-blue-600 text-white shadow-lg hover:bg-blue-700"
                 }`}
               >
                 {plan.buttonLabel}
