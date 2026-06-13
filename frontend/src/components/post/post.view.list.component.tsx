@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Post } from "../../models/post";
 import BookmarkButton from "../BookmarkButton";
 import SSProfile from "../ui-component/ss-profile/ss-profile";
+import { formatReadingStats } from "../../utils/story-utils";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -29,12 +30,6 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
       month: "short",
       day: "2-digit",
     });
-  };
-
-  const calculateReadingTime = (content: string): number => {
-    if (!content) return 1;
-    const words = content.trim().split(/\s+/).length;
-    return Math.max(1, Math.ceil(words / 200));
   };
 
   if (isLoading) {
@@ -104,13 +99,13 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                   />
                 </div>
 
-                <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="px-3 py-1 bg-indigo-600 border border-indigo-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
+                <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap max-w-[80%]">
+                  <span className="inline-flex items-center px-2 py-0.5 bg-indigo-600 border border-indigo-500/50 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg max-w-[120px] truncate">
                     {story.tag}
                   </span>
                   {story.language && (
-                    <span className="px-3 py-1 bg-purple-600 border border-purple-500/50 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
-                      {story.language}
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-600 border border-purple-500/50 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg whitespace-nowrap">
+                      🌐 {story.language}
                     </span>
                   )}
                 </div>
@@ -145,7 +140,7 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                     </div>
 
                     <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400 px-2 py-1 rounded-md">
-                      {calculateReadingTime(story.content)} MIN READ
+                      {formatReadingStats(story.content).toUpperCase()}
                     </div>
                   </div>
 

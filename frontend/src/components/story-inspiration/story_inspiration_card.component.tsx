@@ -87,7 +87,7 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
   };
 
   return (
-    <div className="motion-card group relative bg-white border border-gray-100 hover:border-indigo-500/40 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full transition-colors duration-300 dark:bg-slate-900/50 dark:border-none dark:shadow-xl">
+    <div className="motion-card group relative bg-white border border-gray-100 hover:border-indigo-500/40 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-500/20 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full transition-all duration-300 dark:bg-slate-900/50 dark:border-none dark:shadow-xl">
       
       {/* Zoom-in Card Cover Image */}
       <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-[#0A0E17]">
@@ -95,11 +95,11 @@ const StoryInspirationCard: React.FC<StoryInspirationCardProps> = ({ story }) =>
         <ImageFallback
             src={image}
             alt={title}
-            className="motion-image w-full h-full object-cover"
+            className="motion-image w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
         />
         
         {/* Genre tag */}
-        <div className={`absolute top-4 right-4 z-20 px-3.5 py-1.5 rounded-full backdrop-blur-md border bg-gray-100 text-slate-700 border-gray-200 text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5 ${genreBadgeClasses[genre] || "dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300"}`}>
+        <div className={`absolute top-4 right-4 z-20 px-3.5 py-1.5 rounded-full backdrop-blur-md border bg-gray-100 text-slate-700 border-gray-200 text-[10px] font-bold tracking-widest uppercase shadow-md flex items-center gap-1.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg ${genreBadgeClasses[genre] || "dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300"}`}>
           <i className={`${config.icon} text-xs`}></i>
           {genre}
         </div>

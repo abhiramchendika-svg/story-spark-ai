@@ -21,13 +21,35 @@ router.post(
   PostController.createPost
 );
 
-// Get Posts
-router.get("/lists", PostController.getPosts);
-router.get("/latest-lists", PostController.getLatestPosts);
-router.get("/latest-posts", PostController.getLatestPosts);
-router.get("/feature-lists", PostController.getFeaturedPosts);
-router.get("/featured-posts", PostController.getFeaturedPosts);
-router.get("/genres", PostController.getGenres);
+router.get(
+  "/tag/:tag",
+  PostController.getPostsByTag
+);
+
+router.get(
+  "/:id",
+  PostController.getSinglePost
+);
+
+router.get(
+  "/latest-posts",
+  PostController.getLatestPosts
+);
+
+router.get(
+  "/latest-lists",
+  PostController.getLatestPosts
+);
+
+router.get(
+  "/featured-posts",
+  PostController.getFeaturedPosts
+);
+
+router.get(
+  "/feature-lists",
+  PostController.getFeaturedPosts
+);
 
 router.patch(
   "/featured/:postId",
@@ -81,7 +103,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
-  checkRequestLimit,
+  checkRequestLimit(),
   PostController.remixStory
 );
 
@@ -93,7 +115,7 @@ router.post(
     ENUM_USER_ROLE.ADMIN,
     ENUM_USER_ROLE.SUPER_ADMIN
   ),
-  checkRequestLimit,
+  checkRequestLimit(),
   PostController.translateStory
 );
 
