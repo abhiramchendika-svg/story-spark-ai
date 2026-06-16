@@ -77,9 +77,6 @@ const auth =
           );
         }
 
-        // Bug #111 Fix: Attach the fresh DB user to req.user instead of the
-        // raw JWT payload so controllers always get up-to-date role, email,
-        // and profile data rather than values frozen at token issuance time.
         (req as any).user = user;
 
         next();
