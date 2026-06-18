@@ -17,14 +17,6 @@ const app: Application = express();
 app.set("trust proxy", 1);
 app.use(helmet());
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: "Too many requests, please try again later.",
-});
-
-app.use(limiter);
-
 const defaultCorsOrigins =
   process.env.NODE_ENV === "development"
     ? ["http://localhost:4001", "http://localhost:4002"]
@@ -53,9 +45,18 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Cookie"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
+
+// Rate limiter — placed after CORS so OPTIONS preflight requests are
+// never counted against the limit before CORS has a chance to respond.
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later.",
+});
+app.use(limiter);
 
 // ─── 1. FIXED: ENFORCED HARDENED PAYLOAD LIMITS TO PREVENT DoS ───
 app.use(express.json({ limit: "2mb" }));

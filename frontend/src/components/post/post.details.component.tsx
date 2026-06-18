@@ -71,10 +71,7 @@ const PostDetailsComponent = () => {
     {
       skip: !tag,
     }
-  );
-  
-
- 
+);
   
   const [toggleReaction] = useToggleReactionMutation();
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();

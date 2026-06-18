@@ -27,6 +27,8 @@ type Inputs = {
 };
 
 const MAX_PROMPT_LENGTH = 2000;
+const WARN_THRESHOLD = 0.85;
+const lengths = ["short", "medium", "long"] as const;
 const WARN_THRESHOLD = 0.8;
 const DANGER_THRESHOLD = 0.95;
 
@@ -477,6 +479,12 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [selectTopics, setSelectTopics] = useState<ITopicData[]>([]);
   const [newTopicTitle, setNewTopicTitle] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const { data } = useGetProfileInfoQuery(undefined);
+  const userRole = getUserInfo();
+  const subscriptionType = (userRole?.subscriptionType as string) || "free";
+  const login = isLoggedIn();
+  const [generateModel] = useGenerateModelMutation();
+  const [generateFreeModel] = useGenerateFreeModelMutation();
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchFilter, setSearchFilter] = useState<string>("all");
@@ -1365,6 +1373,22 @@ const handleExportMarkdown = () => {
 
 if (isLoading) {
   return (
+    <div className="bg-gradient-to-br animate-gradient-slow min-h-screen relative overflow-x-hidden">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+          <div className="pt-2 w-full md:w-auto flex justify-start">
+            <Link to="/">
+              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
+                <i className="fa-solid fa-left-long"></i> BACK
+              </div>
+            </Link>
+          </div>
+
+          {!login && (
+            <div className="pt-2 text-center">
+              <div className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 text-gray-400 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded text-sm whitespace-normal md:whitespace-nowrap leading-relaxed">
+                <span>
+                  Free access for 3 requests — <Link to="/login"><span className="text-indigo-400 underline font-semibold">Login</span></Link> for more!
     <div className="flex items-center justify-center py-20">
       <StoryGeneratingAnimation />
     </div>
@@ -1408,6 +1432,27 @@ if (isLoading) {
                 )}
               </div>
             </div>
+          )}
+
+          <div className="flex flex-col items-center md:items-end pt-2 w-full md:w-auto">
+            <button className="!rounded-button bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 text-gray-300 px-3 py-2 flex items-center gap-2 transition-all duration-300 rounded whitespace-nowrap">
+              <span>
+                <span className="text-gray-400 text-xs mr-1">Per Month</span>
+                {getRequestLimit(subscriptionType)}
+              </span>
+              <Link to="/pricing" className="border-1 border-white/20 pl-2 text-gray-300">
+               Upgrade
+              </Link>
+              
+              <i className="fas fa-bolt text-yellow-400"></i>
+            </button>
+            <div className="mt-3 text-gray-500 text-xs text-center md:text-right">
+              <span>
+                This month request:{" "}
+                {login ? (data?.requestsThisMonth ?? 0) : guestRequestCount}
+              </span>
+              <br />
+              <span>Total posts: {login ? (data?.postsCount ?? 0) : 0}</span>
             <div className="flex justify-start sm:justify-end">
               <div className="flex -space-x-5">
                 {stories && stories.length > 0 && (
@@ -1906,6 +1951,10 @@ onKeyDown={(e) => {
                           </button>
                         </div>
 
+    <div className="flex flex-wrap items-center gap-2 mb-3">
+      <span className="text-xs text-gray-400 mr-1">📏 Length:</span>
+
+      {lengths.map((length) => (
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
@@ -2214,6 +2263,7 @@ onKeyDown={(e) => {
       <button
         type="submit"
         disabled={loading || isOverLimit}
+        className={`w-full sm:w-auto justify-center rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${
         aria-busy={loading}
         aria-disabled={loading || isOverLimit}
         className={`rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 text-gray-200 px-6 py-3 font-semibold ${

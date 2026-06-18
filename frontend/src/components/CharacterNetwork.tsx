@@ -32,6 +32,38 @@ interface CharacterNetworkProps {
   storyId: string;
 }
 
+interface Character {
+  id: string;
+  name: string;
+  appearanceCount: number;
+  importanceScore: number;
+}
+
+interface Relationship {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  strength: number;
+  interactionCount: number;
+}
+
+type CharacterNodeData = {
+  name: string;
+  appearanceCount: number;
+  importanceScore: number;
+  isSelected: boolean;
+};
+
+type RelationshipEdgeData = {
+  type: string;
+  strength: number;
+  interactionCount: number;
+};
+
+type CharacterFlowNode = Node<CharacterNodeData, "character">;
+type CharacterFlowEdge = Edge<RelationshipEdgeData, "relationship">;
+
 const CharacterNetwork = ({ storyId }: CharacterNetworkProps) => {
   const { data: networkData, isLoading, error, refetch } = useGetCharacterNetworkQuery(storyId);
 

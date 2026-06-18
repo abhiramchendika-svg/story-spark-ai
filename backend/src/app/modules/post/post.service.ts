@@ -16,6 +16,7 @@ import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 import { escapeRegex } from "../../../utils/regex.util";
+
 const MAX_SEARCH_TERM_LENGTH = 100;
 
 interface ICursorPayload {
@@ -99,14 +100,21 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
   try {
-    const isPublished = payload.isPublished ?? true;
-    const res = await Post.create({
-      ...payload,
-      isPublished,
-      publishedAt: isPublished ? new Date() : null,
+    const postPayload = {
+      title: payload.title,
+      content: payload.content,
+      tag: payload.tag,
+      imageURL: payload.imageURL,
+      topic: payload.topic,
+      language: payload.language,
+      emotions: payload.emotions,
+      genre: payload.genre,
+      isPublished: true,
+      publishedAt: new Date(),
       author: user._id,
       updatedBy: user._id,
-    });
+    };
+    const res = await Post.create(postPayload);
 
     if (res && res.isPublished) {
       const updatedUser = await User.findByIdAndUpdate(
@@ -119,6 +127,8 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       if (updatedUser && updatedUser.postsCount === 1) {
         GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
       }
+     
+      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
     }
     return res;
   } catch (error) {
@@ -126,7 +136,7 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       httpStatus.INTERNAL_SERVER_ERROR,
       "Failed to create post"
     );
-  }
+    }
 };
 
 const getPosts = async (
@@ -508,7 +518,7 @@ const deletePost = async (postId: string, token: ITokenPayload) => {
 
   if (post.isPublished) {
     await User.findByIdAndUpdate(
-      user._id,
+      post.author,
       { $inc: { postsCount: -1 } }
     );
   }

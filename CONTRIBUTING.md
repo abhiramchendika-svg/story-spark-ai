@@ -183,7 +183,6 @@ Please read and follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 
 If you get stuck, open a [Discussion](https://github.com/ronisarkarexe/story-spark-ai/discussions) or comment on the relevant issue. We're happy to help!
-=======
 ## **Frequently Asked Questions**
 
 1. **Do I need to get assigned before working on an issue?**

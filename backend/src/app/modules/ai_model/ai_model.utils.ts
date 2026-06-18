@@ -214,12 +214,20 @@ export async function generateWithGeminiStories(
   assertGeminiApiKeyConfigured();
 
   try {
+    const genreInstruction = buildGenreInstruction(genre);
+    const toneInstruction = buildToneInstruction(tone);
+    const charactersInstruction = buildCharactersInstruction(characters);
+
     const response = await executeWithRetryAndFallback(async (activeModel) => {
       const chatSession = activeModel.startChat({
         generationConfig,
         safetySettings,
         history: [],
       });
+
+      const toneInstruction = buildToneInstruction(tone);
+      const genreInstruction = buildGenreInstruction(genre);
+      const charactersInstruction = buildCharactersInstruction(characters);
 
       return chatSession.sendMessage(
         `${buildGenreInstruction(genre)}${buildToneInstruction(tone)}${buildCharactersInstruction(characters)}You are an expert storyteller and emotion analyst. The user provided the following base prompt: "${prompt}".

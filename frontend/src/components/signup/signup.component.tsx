@@ -152,35 +152,98 @@ const otpPayload = {
   };
 
   const handleOtpValidation = async () => {
-    const enteredOtp = otp?.trim();
-    if (!enteredOtp) { toast.error("Please enter OTP"); return; }
-    if (!registerInfo) { toast.error("Something went wrong. Please restart the process."); return; }
-    if (Date.now() > expiredAt) { toast.error("OTP expired. Please request a new one."); return; }
+  const enteredOtp = otp?.trim();
+  if (!enteredOtp) { toast.error("Please enter OTP"); return; }
+  if (!registerInfo) { toast.error("Something went wrong. Please restart the process."); return; }
+  if (Date.now() > expiredAt) { toast.error("OTP expired. Please request a new one."); return; }
 
+  setIsBusy(true);
+  try {
+    const otpResponse = await verifyOtp({ email: registerInfo.email, otp: enteredOtp }).unwrap();
+
+    if (!otpResponse?.data?.verificationToken) {
+      throw new Error("No verification token received");
+    }
+    try {
+      const res = await registerUser({
+        ...registerInfo,
+        verificationToken: otpResponse.data.verificationToken,
+      }).unwrap();
+
+      if (res.data.accessToken) {
+        toast.success("OTP validated successfully!");
+        storeUserInfo({ accessToken: res.data.accessToken });
+        navigate("/");
+      }
+    } catch (registerErr: unknown) {
+      const e = registerErr as { data?: Array<{ message?: string }>; message?: string };
+      const message = e?.data?.[0]?.message || e?.message || "Registration failed after OTP verification.";
+      toast.error(message);
+      console.log("registerUser error:", e);
+      return;
+    }
+  };
+  } catch (err: unknown) {
+    const e = err as { data?: Array<{ message?: string }>; message?: string };
+    const message = e?.data?.[0]?.message || e?.message || "OTP verification failed.";
+    toast.error(message);
+  } finally {
+    setIsBusy(false);
+  }
+};
+
+  const handleResendOtp = async () => {
+    if (cooldown > 0 || isBusy) return;
+    if (!registerInfo) {
+      toast.error("Something went wrong. Please restart the process.");
+      return;
+    }
     setIsBusy(true);
     try {
-      const otpResponse = await verifyOtp({ email: registerInfo.email, otp: enteredOtp }).unwrap();
-      if (otpResponse?.data?.verificationToken) {
-        const res = await registerUser({
-          ...registerInfo,
-          verificationToken: otpResponse.data.verificationToken,
-        }).unwrap();
-        if (res.data.accessToken) {
-          toast.success("OTP validated successfully!");
-          storeUserInfo({ accessToken: res.data.accessToken });
-          navigate("/");
-        }
-      } else {
-        throw new Error("No verification token received");
+      const res = await emailVerify({
+        name: registerInfo.name,
+        email: registerInfo.email,
+      }).unwrap();
+      if (res?.data) {
+        const { expiresAt } = res.data;
+        setExpiredAt(new Date(expiresAt).getTime());
+        setValue("otp", "");
+        toast.success("OTP resent to your email");
+        setCooldown(60);
       }
-    } catch (err: unknown) {
-      const e = err as { data?: Array<{ message?: string }>; message?: string };
-      const message = e?.data?.[0]?.message || e?.message || "OTP verification failed.";
+    } catch (error: unknown) {
+      const e = error as { data?: Array<{ message?: string }>; message?: string };
+      const message =
+        e?.data?.[0]?.message ||
+        e?.message ||
+        "Failed to resend OTP. Please try again.";
       toast.error(message);
+      console.log("resend error: ", error);
     } finally {
       setIsBusy(false);
     }
   };
+
+  const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      toast.error("Google login failed");
+      return;
+    }
+    setIsBusy(true);
+    try {
+      const res = await googleLogin({ token: credentialResponse.credential }).unwrap();
+      if (res?.data?.accessToken) {
+        storeUserInfo({ accessToken: res.data.accessToken });
+        toast.success("Logged in with Google successfully!");
+        navigate("/");
+      }
+    } catch {
+      toast.error("Google authentication failed");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   const handleResendOtp = async () => {
     if (cooldown > 0 || isBusy) return;
     if (!registerInfo) {
@@ -247,7 +310,6 @@ const otpPayload = {
       setValue("confirmPassword", registerInfo.password);
     }
   }, [showOtpField, registerInfo, setValue]);
-
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 relative overflow-x-hidden text-slate-900 dark:text-slate-100 box-border">
 
@@ -422,6 +484,7 @@ const otpPayload = {
                   validation={{
                     required: "Please enter OTP",
                     minLength: { value: 6, message: "OTP must be 6 digits" },
+                      setValueAs: (value: string) => value.replace(/\D/g, ""),
                     maxLength: { value: 6, message: "OTP must be 6 digits" },
                     pattern: { value: /^[0-9]{6}$/, message: "OTP must contain only numbers" },
                   }}
