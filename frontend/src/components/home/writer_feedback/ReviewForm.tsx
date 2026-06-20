@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useEffect, useState, useCallback } from "react";
 import { useCreateReviewMutation } from "../../../redux/apis/review.api";
 
 const ratingLabels = [
@@ -28,15 +28,60 @@ const StarRating = ({ rating, setRating }: { rating: number; setRating: (n: numb
 );
 const ratingLabels = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 
-const StarRating = ({
-  rating,
-  setRating,
-}: {
+type StarRatingProps = {
   rating: number;
   setRating: (n: number) => void;
-}) => {
+};
+
+const StarRating: React.FC<StarRatingProps> = ({ rating, setRating }) => {
   const [hovered, setHovered] = useState(0);
 
+  // keyboard support: left/right arrows to change rating, 1-5 keys to set directly
+  const handleKey = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "ArrowLeft") setRating(Math.max(0, rating - 1));
+      if (e.key === "ArrowRight") setRating(Math.min(5, rating + 1));
+      const num = parseInt(e.key, 10);
+      if (!Number.isNaN(num) && num >= 1 && num <= 5) setRating(num);
+    },
+    [rating, setRating]
+  );
+
+  return (
+    <div>
+      <div
+        role="radiogroup"
+        aria-label="Star rating"
+        tabIndex={0}
+        onKeyDown={handleKey}
+        className="flex items-center gap-2"
+      >
+        {[1, 2, 3, 4, 5].map((star) => {
+          const filled = star <= (hovered || rating);
+          return (
+            <button
+              key={star}
+              type="button"
+              role="radio"
+              aria-checked={rating === star}
+              aria-label={`${star} star${star > 1 ? "s" : ""}`}
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHovered(star)}
+              onMouseLeave={() => setHovered(0)}
+              className={`text-2xl transition-all duration-150 focus-visible:outline-none rounded-md px-1 ${
+                filled
+                  ? "text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.7)] scale-110"
+                  : "text-gray-300 dark:text-gray-600 hover:text-yellow-300"
+              }`}
+            >
+              ★
+            </button>
+          );
+        })}
+      </div>
+
+      {(hovered || rating) > 0 && (
+        <p className="mt-1 text-xs font-medium text-yellow-400">{ratingLabels[hovered || rating]}</p>
   const renderStarIcon = (index: number) => {
     // index is 1..5
     if (rating >= index) return <i className="fa-solid fa-star" />;
@@ -75,15 +120,13 @@ const StarRating = ({
             />
 
             {/* right half (full star) */}
-            <button
-              type="button"
-              aria-label={`Rate ${star} star`}
-              onMouseEnter={() => setHovered(star)}
-              onClick={() => handleClick(star)}
-              className="absolute right-0 top-0 h-full w-1/2 bg-transparent"
-            />
-          </div>
-        ))}
+        const StarRating = ({
+          rating,
+          setRating,
+        }: {
+          rating: number;
+          setRating: (n: number) => void;
+        }) => {
       </div>
 
       {(hovered || rating) > 0 && (
@@ -95,13 +138,14 @@ const StarRating = ({
   );
 };
 
-const ReviewForm = () => {
+const ReviewForm: React.FC = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   const [createReview, { isLoading }] = useCreateReviewMutation();
 
@@ -114,53 +158,58 @@ const ReviewForm = () => {
     if (feedback.length > 500) newErrors.feedback = "Max 500 characters";
     if (rating < 0.5) newErrors.rating = "Please select a rating";
 
+  const validate = useCallback(() => {
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = "Name is required.";
+    if (!role.trim()) newErrors.role = "Role is required.";
+    if (!feedback.trim()) newErrors.feedback = "Review is required.";
+    if (feedback.length > 500) newErrors.feedback = "Maximum 500 characters.";
+    if (rating === 0) newErrors.rating = "Please select a rating.";
     return newErrors;
-  };
+  }, [name, role, feedback, rating]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     const newErrors = validate();
-
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setSuccess(false);
       return;
     }
 
     try {
-      await createReview({
-        name,
-        role,
-        feedback,
-        rating,
-        imgSrc: "",
-      });
-
+      await createReview({ name, role, feedback, rating, imgSrc: "" });
       setSuccess(true);
       setName("");
       setRole("");
       setFeedback("");
       setRating(0);
       setErrors({});
-    } catch {
-      setErrors({
-        submit: "Failed to submit review. Please try again.",
-      });
+    } catch (err) {
+      // keep error message generic
+      setErrors({ submit: "Failed to submit review. Please try again." });
+      setSuccess(false);
     }
-  };
+  }, [createReview, name, role, feedback, rating, validate]);
 
   return (
-    <div className="max-w-3xl mx-auto premium-glow rounded-2xl group transition-transform duration-500 hover:-translate-y-1 focus-within:-translate-y-1">
-      <div className="glass-surface p-5 sm:p-6 rounded-2xl shadow-xl dark:shadow-indigo-500/10 transition-shadow duration-500 group-hover:shadow-indigo-500/20 group-focus-within:shadow-indigo-500/20 relative z-10 bg-white/70 dark:bg-slate-900/70">
-        
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5">
+    <section aria-labelledby="review-form-heading" className="max-w-3xl mx-auto">
+      {/* Variant wrapper: light card vs dark/glass card */}
+      <div
+        className={`rounded-2xl transition-transform duration-300 focus-within:-translate-y-0.5 ${
+          isDark
+            ? "relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0f172a]/80 to-[#111827]/80 p-6 sm:p-8 md:p-10 shadow-2xl shadow-blue-500/10 backdrop-blur-md"
+            : "glass-surface p-5 sm:p-6 rounded-2xl shadow-xl bg-white/70"
+        }`}
+      >
+        <div className="flex items-start justify-between gap-6">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+            <h2 id="review-form-heading" className={`text-lg font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
               Share Your Experience
-            </h3>
-            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
-              Help us build the best creative community.
-            </p>
+            </h2>
+            <p className={`mt-1 text-sm ${isDark ? "text-gray-300" : "text-slate-500"}">Your feedback helps us improve StorySparkAI for everyone.</p>
           </div>
-          <div className="mt-3 sm:mt-0 flex items-center">
+
+          <div className="flex-shrink-0">
             <StarRating rating={rating} setRating={setRating} />
           </div>
         </div>
@@ -262,125 +311,93 @@ const ReviewForm = () => {
 
           {/* Success */}
           {success && (
-            <div
-              aria-live="polite"
-              className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400 transition-all duration-300"
-            >
-              <span className="text-lg">🎉</span>
-              <span>
-                Thank you! Your review has been submitted for approval.
-              </span>
+            <div role="status" aria-live="polite" className={`rounded-md p-3 text-sm ${isDark ? "bg-green-900/30 text-green-200" : "bg-emerald-50 text-emerald-700"}`}>
+              🎉 Thank you! Your review has been submitted for approval.
             </div>
           )}
 
-          {/* Error */}
           {errors.submit && (
-            <div
-              aria-live="polite"
-              className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
-            >
-              <span className="text-lg">⚠️</span>
-              <span>{errors.submit}</span>
+            <div role="alert" aria-live="polite" className={`rounded-md p-3 text-sm mt-2 ${isDark ? "bg-red-900/30 text-red-300" : "bg-rose-50 text-rose-700"}`}>
+              ⚠ {errors.submit}
             </div>
           )}
+        </div>
 
-          <div className="space-y-6">
-            {/* Name */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          className="mt-6 grid grid-cols-1 gap-4"
+          noValidate
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="name"
-                className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
-              >
-                <span className="text-blue-400">👤</span>
+              <label htmlFor="review-name" className="sr-only">
                 Name
-                <span className="text-red-400">*</span>
               </label>
-
               <input
-                id="name"
+                id="review-name"
+                name="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your full name"
+                placeholder="Your name *"
                 aria-invalid={!!errors.name}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-describedby={errors.name ? "error-name" : undefined}
+                className={`w-full rounded-lg px-3 py-2 text-sm transition ${isDark ? "bg-white/5 text-white placeholder-gray-400" : "bg-white text-slate-900 placeholder-slate-400"}`}
               />
-
               {errors.name && (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
+                <p id="error-name" className="mt-1 text-xs text-rose-400" role="alert">
                   {errors.name}
                 </p>
               )}
             </div>
 
-            {/* Role */}
             <div>
-              <label
-                htmlFor="role"
-                className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
-              >
-                <span className="text-blue-400">💼</span>
+              <label htmlFor="review-role" className="sr-only">
                 Role
-                <span className="text-red-400">*</span>
               </label>
-
               <input
-                id="role"
+                id="review-role"
+                name="role"
                 type="text"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                placeholder="e.g. Fantasy Writer, Student, Blogger"
+                placeholder="Your role (e.g. Fiction Writer) *"
                 aria-invalid={!!errors.role}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-describedby={errors.role ? "error-role" : undefined}
+                className={`w-full rounded-lg px-3 py-2 text-sm transition ${isDark ? "bg-white/5 text-white placeholder-gray-400" : "bg-white text-slate-900 placeholder-slate-400"}`}
               />
-
               {errors.role && (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
+                <p id="error-role" className="mt-1 text-xs text-rose-400" role="alert">
                   {errors.role}
                 </p>
               )}
             </div>
+          </div>
 
-            {/* Feedback */}
-            <div>
-              <label
-                htmlFor="feedback"
-                className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300"
-              >
-                <span className="text-blue-400">💬</span>
-                Review
-                <span className="text-red-400">*</span>
-              </label>
+          <div>
+            <label htmlFor="review-feedback" className="sr-only">
+              Review
+            </label>
+            <textarea
+              id="review-feedback"
+              name="feedback"
+              rows={4}
+              maxLength={500}
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              placeholder="How has Story Spark AI helped your writing process? *"
+              aria-invalid={!!errors.feedback}
+              aria-describedby={errors.feedback ? "error-feedback" : "feedback-help"}
+              className={`w-full rounded-lg px-3 py-2 text-sm transition resize-y ${isDark ? "bg-white/5 text-white placeholder-gray-400" : "bg-white text-slate-900 placeholder-slate-400"}`}
+            />
 
-              <textarea
-                id="feedback"
-                rows={5}
-                maxLength={500}
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Tell us about your experience with StorySparkAI..."
-                aria-invalid={!!errors.feedback}
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all duration-200 focus:border-blue-500/60 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-
-              <div className="mt-1 flex items-center justify-between max-w-lg">
-                {errors.feedback ? (
-                  <p className="flex items-center gap-1 text-xs text-red-400">
-                    <span>⚠</span>
-                    {errors.feedback}
-                  </p>
-                ) : (
-                  <span />
-                )}
-
-                <p
-                  className={`text-xs ${
-                    feedback.length > 450 ? "text-yellow-400" : "text-gray-500"
-                  }`}
-                >
-                  {feedback.length}/500
+            <div className="mt-1 flex items-center justify-between text-xs">
+              {errors.feedback ? (
+                <p id="error-feedback" className="text-rose-400" role="alert">
+                  {errors.feedback}
                 </p>
               </div>
             </div>
@@ -393,18 +410,37 @@ const ReviewForm = () => {
                 <span className="text-red-400">*</span>
               </label>
 
-              <StarRating rating={rating} setRating={setRating} />
+              <span className={`${feedback.length > 450 ? "text-yellow-400" : isDark ? "text-gray-300" : "text-slate-400"}`}>
+                {feedback.length}/500
+              </span>
+            </div>
+          </div>
 
-              <p className="mt-2 text-xs text-gray-500">
-                Select a rating based on your overall experience.
-              </p>
+          <div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className={`${isDark ? "text-white" : "text-slate-700"} font-medium`}>Rating</span>
+                  {errors.rating && <span className="text-xs text-rose-400">• {errors.rating}</span>}
+                </div>
+              </div>
 
-              {errors.rating && (
-                <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
-                  <span>⚠</span>
-                  {errors.rating}
-                </p>
-              )}
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition ${isDark ? "bg-blue-600/90 hover:bg-blue-500/90" : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"} disabled:opacity-60`}
+                >
+                  {isLoading ? (
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                  ) : null}
+
+                  {isLoading ? "Submitting..." : isDark ? "Share Review" : "Share Review ✨"}
+                </button>
+              </div>
             </div>
 
             <div className="flex justify-center mt-8 pb-2 sm:pb-0">
@@ -442,12 +478,8 @@ const ReviewForm = () => {
               )}
             </button>
           </div>
-        </div>
+        </form>
       </div>
-    </div>
-  
-</div>
-  );
     </div>
   );
 };

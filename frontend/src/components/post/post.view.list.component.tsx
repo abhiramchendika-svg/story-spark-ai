@@ -6,6 +6,7 @@ import SSProfile from "../ui-component/ss-profile/ss-profile";
 import { formatReadingStats } from "../../utils/story-utils";
 import ImageFallback from "../ImageFallback";
 import { SkeletonGrid } from "../cards/SkeletonCard";
+import StarRatingDisplay from "../story-rating/StarRatingDisplay";
 
 interface IExploreViewListComponentProps {
   posts: Post[];
@@ -164,6 +165,12 @@ const ExploreViewListComponent: React.FC<IExploreViewListComponentProps> = ({
                       {formatReadingStats(story.content).toUpperCase()}
                     </div>
                   </div>
+
+                  {story.averageRating > 0 && (
+                    <div className="mb-3 flex items-center justify-between">
+                      <StarRatingDisplay rating={story.averageRating} totalRatings={story.totalRatings} size="sm" />
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium">
                     <div className="flex gap-4">

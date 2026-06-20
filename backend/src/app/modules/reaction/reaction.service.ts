@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 import { Reaction } from "./reaction.model";
 import { Types } from "mongoose";
 import { Post } from "../post/post.model";
+import { verifyPostAccess } from "../post/post.utils";
 
 type ReactionType = "like" | "love" | "laugh" | "angry" | "sad";
 
@@ -32,6 +33,8 @@ const toggleReaction = async (
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
+  
+  verifyPostAccess(post, user);
 
   // Check existing reaction
   const existingReaction = await Reaction.findOne({

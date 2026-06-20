@@ -29,6 +29,7 @@ import { ChatRouter } from "../app/modules/chat/chat.router";
 import { SearchRouter } from "../app/modules/search/search.router";
 
 import { StoryConsistencyRouter } from "../app/modules/story_consistency/story_consistency.router";
+import { StoryRatingRouter } from "../app/modules/story_rating/story_rating.router";
 const router = express.Router();
 
 const modules = [
@@ -150,12 +151,12 @@ const modules = [
   },
 
   {
-    path: "/stories",
-    router: storyRoutes,
-  },
-  {
     path: "/search",
     router: SearchRouter,
+  },
+  {
+    path: "/story-rating",
+    router: StoryRatingRouter,
   },
 ];
 

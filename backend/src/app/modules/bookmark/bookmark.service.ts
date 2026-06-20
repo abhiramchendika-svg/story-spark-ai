@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 import { Bookmark } from "./bookmark.model";
 import { Post } from "../post/post.model";
 import { Types } from "mongoose";
+import { verifyPostAccess } from "../post/post.utils";
 
 const toggleBookmark = async (storyId: string, token: ITokenPayload) => {
   const { email } = token;
@@ -19,6 +20,8 @@ const toggleBookmark = async (storyId: string, token: ITokenPayload) => {
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Story not found!");
   }
+
+  verifyPostAccess(post, user);
 
   const existingBookmark = await Bookmark.findOne({
     userId: user._id,
@@ -61,7 +64,7 @@ const getBookmarks = async (
       },
     },
     { $unwind: "$story" },
-    { $match: { "story.isDeleted": { $ne: true } } },
+    { $match: { "story.isDeleted": { $ne: true }, "story.isPublished": true } },
     { $count: "count" }
   ]);
   const total = totalAgg[0]?.count || 0;
@@ -78,7 +81,7 @@ const getBookmarks = async (
       },
     },
     { $unwind: "$story" },
-    { $match: { "story.isDeleted": { $ne: true } } },
+    { $match: { "story.isDeleted": { $ne: true }, "story.isPublished": true } },
     { $sort: { createdAt: -1 } },
     { $skip: skip },
     { $limit: limit },
@@ -130,6 +133,12 @@ const checkBookmarkStatus = async (storyId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
+  const post = await Post.findOne({ _id: storyId, isDeleted: { $ne: true } });
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Story not found!");
+  }
+  verifyPostAccess(post, user);
+
   const bookmark = await Bookmark.findOne({
     userId: user._id,
     storyId: new Types.ObjectId(storyId),
@@ -144,6 +153,12 @@ const deleteBookmark = async (storyId: string, token: ITokenPayload) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
+
+  const post = await Post.findOne({ _id: storyId, isDeleted: { $ne: true } });
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Story not found!");
+  }
+  verifyPostAccess(post, user);
 
   const deletedBookmark = await Bookmark.findOneAndDelete({
     userId: user._id,
