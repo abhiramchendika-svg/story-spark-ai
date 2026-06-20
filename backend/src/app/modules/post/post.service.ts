@@ -5,6 +5,7 @@ import { IPost, IPostPayload, IPostSearchFields } from "./post.interface";
 import httpStatus from "http-status";
 import { Post } from "./post.model";
 import { Bookmark } from "../bookmark/bookmark.model";
+import { Comment } from "../comment/comment.model";
 import { StoryVersionService } from "../story_version/story_version.service";
 import {
   IGenericResponse,
@@ -16,6 +17,7 @@ import { SortOrder, Types } from "mongoose";
 import { GamificationService } from "../gamification/gamification.service";
 import { WritingStreakService } from "../gamification/writing_streak.service";
 import { escapeRegex } from "../../../utils/regex.util";
+import { verifyPostAccess } from "./post.utils";
 
 const MAX_SEARCH_TERM_LENGTH = 100;
 
@@ -127,8 +129,6 @@ const createPost = async (payload: IPostPayload, token: ITokenPayload) => {
       if (updatedUser && updatedUser.postsCount === 1) {
         GamificationService.awardBadge(String(user._id), "First Story").catch(console.error);
       }
-     
-      WritingStreakService.updateStreakAndUnlocks(String(user._id)).catch(console.error);
     }
     return res;
   } catch (error) {
@@ -379,6 +379,13 @@ const getSinglePost = async (id: string, token?: ITokenPayload | null) => {
   if (!postById) {
     throw new ApiError(httpStatus.NOT_FOUND, "Post not found!");
   }
+
+  let user = null;
+  if (token && token.email) {
+    user = await User.findOne({ email: token.email });
+  }
+  verifyPostAccess(postById, user);
+
   return postById;
 };
 
@@ -411,10 +418,12 @@ const toggleBookmark = async (postId: string, token: ITokenPayload) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
-  const postExists = await Post.exists({ _id: postId, isDeleted: { $ne: true } });
-  if (!postExists) {
+  const post = await Post.findOne({ _id: postId, isDeleted: { $ne: true } });
+  if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post not found!");
   }
+
+  verifyPostAccess(post, user);
 
   const isBookmarked = await Post.exists({
     _id: postId,
@@ -549,6 +558,8 @@ const remixStory = async (postId: string, prompt: string, token: ITokenPayload) 
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
 
+  verifyPostAccess(originalPost, user);
+
   const remixedContent = `[AI Remixed Version based on prompt: "${safePrompt}"]\n\n${originalPost.content}`;
 
   const res = await Post.create({
@@ -587,6 +598,8 @@ const translateStory = async (postId: string, language: string, token: ITokenPay
   if (!originalPost) {
     throw new ApiError(httpStatus.NOT_FOUND, "Original story post not found!");
   }
+
+  verifyPostAccess(originalPost, user);
 
   const translatedContent = `[Translated to ${safeLanguage}]\n\n${originalPost.content}`;
 
