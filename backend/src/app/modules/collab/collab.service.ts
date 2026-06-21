@@ -21,4 +21,12 @@ export class CollabService {
   static async updateCollabState(roomId: string, base64: string): Promise<void> {
     await CollabRoom.updateOne({ roomId }, { collabState: Buffer.from(base64, 'base64') });
   }
+
+  static async updatePrivacyStatus(roomId: string, isPublic: boolean): Promise<any> {
+    return await CollabRoom.findOneAndUpdate(
+      { roomId },
+      { isPublic },
+      { new: true }
+    );
+  }
 }
