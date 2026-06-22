@@ -12,9 +12,10 @@ import ImageFallback from "../../ImageFallback";
 import { SkeletonGrid } from "../../cards/SkeletonCard";
 
 const FeatureComponent = () => {
-  const { data, isLoading, isError } = useGetFeaturedListsQuery(undefined);
+  const { data, isLoading, isError, refetch } = useGetFeaturedListsQuery(undefined);
   const navigate = useNavigate();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const calculateReadingTime = (content: string): number => {
     if (!content) return 1;
@@ -30,6 +31,15 @@ const FeatureComponent = () => {
     });
   };
 
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <section className="w-full box-border mb-12">
@@ -43,12 +53,42 @@ const FeatureComponent = () => {
 
   if (isError) {
     return (
-      <div className="mb-12 text-slate-900 dark:text-slate-100">
-        <h2 className="text-2xl font-bold mb-6">Featured Posts</h2>
-        <div className="rounded-lg border border-red-200 dark:border-red-900/70 bg-red-50 dark:bg-red-900/20 px-4 py-5 text-red-700 dark:text-red-400">
-          Failed to load featured posts. Please try again later.
+      <section className="w-full box-border mb-12 text-slate-900 dark:text-slate-100">
+        <h2 className="mb-6 text-xl sm:text-2xl font-extrabold tracking-tight select-none">
+          Featured Posts
+        </h2>
+        <div className="rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 px-6 py-8 flex flex-col items-center gap-4 text-center">
+          <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+            <i className="fa-solid fa-triangle-exclamation text-red-500 dark:text-red-400 text-lg" aria-hidden="true" />
+          </div>
+          <div>
+            <p className="font-semibold text-red-700 dark:text-red-300 mb-1">
+              Failed to load featured posts
+            </p>
+            <p className="text-sm text-red-600/80 dark:text-red-400/70">
+              There was a problem connecting to the server. Please check your connection and try again.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRetry}
+            disabled={isRetrying}
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
+          >
+            {isRetrying ? (
+              <>
+                <i className="fa-solid fa-circle-notch fa-spin" aria-hidden="true" />
+                Retrying…
+              </>
+            ) : (
+              <>
+                <i className="fa-solid fa-rotate-right" aria-hidden="true" />
+                Try Again
+              </>
+            )}
+          </button>
         </div>
-      </div>
+      </section>
     );
   }
 
