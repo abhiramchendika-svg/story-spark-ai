@@ -1297,7 +1297,7 @@ html.dark .contact-input::placeholder { color: rgba(148, 163, 184, 0.78); }
    ========================================================================== */
 .scroll-to-top-btn {
   position: fixed;
-  bottom: 2rem;
+  bottom: 5.5rem;
   right: 2rem;
   width: 48px;
   height: 48px;
