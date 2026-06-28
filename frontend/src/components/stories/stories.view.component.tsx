@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   getShortenedText,
@@ -22,6 +23,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useCreatePostMutation } from "../../redux/apis/post.api";
 import jsPDF from "jspdf";
 import StoryTranslator from "../translate/StoryTranslator";
+import StoryEndingGenerator from "./StoryEndingGenerator";
 
 export interface IStories {
   uuid: string;
@@ -58,6 +60,7 @@ const StoriesViewComponent: React.FC<StoriesComponentProps> = ({
   const [showTranslator, setShowTranslator] = useState<boolean>(false);
   const [createPost] = useCreatePostMutation();
   const [showGenreTransformation, setShowGenreTransformation] = useState<boolean>(false);
+  const [showEndingGenerator, setShowEndingGenerator] = useState(false);
 
   const [showWorldMap, setShowWorldMap] = useState<boolean>(false);
 
